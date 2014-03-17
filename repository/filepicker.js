@@ -602,7 +602,9 @@ M.core_filepicker.init = function(Y, options) {
                             return;
                         } else {
                             if (data.msg) {
-                                scope.print_msg(data.msg, 'info');
+var dlg = scope.print_msg(data.msg, 'info');
+// QC: for some strange reason, hide() gets called just after show() making our message box to never actually appear if we call it directly now; let's schedule it in 10ms, so that it is after this buggy hide() is called.
+setTimeout(function(){ dlg.show(); }, 10);
                             }
                             // cache result if applicable
                             if (args.action != 'upload' && data.allowcaching) {
@@ -751,7 +753,6 @@ M.core_filepicker.init = function(Y, options) {
             if (!this.msg_dlg) {
                 this.msg_dlg_node = Y.Node.createWithFilesSkin(M.core_filepicker.templates.message);
                 this.msg_dlg_node.generateID();
-
                 this.msg_dlg = new M.core.dialogue({
                     draggable    : true,
                     bodyContent  : this.msg_dlg_node,
@@ -765,11 +766,12 @@ M.core_filepicker.init = function(Y, options) {
                     this.msg_dlg.hide();
                 }, this);
             }
-
             this.msg_dlg.set('headerContent', header);
             this.msg_dlg_node.removeClass('fp-msg-info').removeClass('fp-msg-error').addClass('fp-msg-'+type)
-            this.msg_dlg_node.one('.fp-msg-text').setContent(Y.Escape.html(msg));
+//            this.msg_dlg_node.one('.fp-msg-text').setContent(Y.Escape.html(msg));
+            this.msg_dlg_node.one('.fp-msg-text').setContent((msg));
             this.msg_dlg.show();
+return this.msg_dlg;
         },
         view_files: function(appenditems) {
             this.viewbar_set_enabled(true);
@@ -1943,3 +1945,5 @@ M.core_filepicker.init = function(Y, options) {
     }
     M.core_filepicker.instances[options.client_id] = new FilePickerHelper(options);
 };
+
+//alert('Ready12'); //quick syntax check / wway to know if the script is effectively reloaded

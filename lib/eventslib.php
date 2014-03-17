@@ -288,7 +288,6 @@ function events_dispatch($handler, $eventdata, &$errormessage) {
 
     } else if (file_exists($CFG->dirroot.$handler->handlerfile)) {
         include_once($CFG->dirroot.$handler->handlerfile);
-
     } else {
         $errormessage = "Handler file of component $handler->component: $handler->handlerfile can not be found!";
         return null;

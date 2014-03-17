@@ -142,9 +142,6 @@ class repository_upload extends repository {
         }
 
         self::antivir_scan_file($_FILES[$elname]['tmp_name'], $_FILES[$elname]['name'], true);
-$err = new stdClass();
-$err->error = 'Upload intercepted by QC in upload repos class';
-return $err;
 
         // {@link repository::build_source_field()}
         $sourcefield = $this->get_file_source_info($_FILES[$elname]['name']);
@@ -201,8 +198,23 @@ return $err;
             throw new file_exception('maxareabytes');
         }
 
-        $record->contextid = $context->id;
+       $record->contextid = $context->id;
         $record->userid    = $USER->id;
+
+// Prepare and trigger course_file_uploaded event
+$cc = new stdClass();
+$cc->file = $_FILES[$elname]['tmp_name'];
+$cc->uploadedname = $_FILES[$elname]['name'];
+$cc->saveas = $saveas_filename;
+$cc->savepath = $savepath;
+$cc->itemid = $itemid;
+$cc->overwrite = $overwriteexisting; 
+$cc->author = $author;
+$cc->license = $license;
+$cc->record = $record;
+$cc->context = $context;
+events_trigger('course_file_uploaded', $cc);
+$_FILES[$elname]['tmp_name'] = $cc->file;
 
         if (repository::draftfile_exists($record->itemid, $record->filepath, $record->filename)) {
             $existingfilename = $record->filename;
@@ -219,7 +231,8 @@ return $err;
                 $event['newfile']->filepath = $record->filepath;
                 $event['newfile']->filename = $unused_filename;
                 $event['newfile']->url = moodle_url::make_draftfile_url($record->itemid, $record->filepath, $unused_filename)->out(false);
-
+if (!empty($cc->msg)) $event['msg'] = $cc->msg;
+if (!empty($cc->error)) $event['error'] = $cc->error;
                 $event['existingfile'] = new stdClass;
                 $event['existingfile']->filepath = $record->filepath;
                 $event['existingfile']->filename = $existingfilename;
@@ -230,10 +243,13 @@ return $err;
             $stored_file = $fs->create_file_from_pathname($record, $_FILES[$elname]['tmp_name']);
         }
 
-        return array(
+        $re = array(
             'url'=>moodle_url::make_draftfile_url($record->itemid, $record->filepath, $record->filename)->out(false),
             'id'=>$record->itemid,
             'file'=>$record->filename);
+if (!empty($cc->msg)) $re['msg'] = $cc->msg;
+if (!empty($cc->error)) $re['error'] = $cc->error;
+return $re;
     }
 
 
