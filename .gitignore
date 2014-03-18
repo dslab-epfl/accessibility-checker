@@ -1,3 +1,7 @@
+*.exe
+*.dll
 *.log
 *.tmp
 out*.txt
+test*.txt
+test*.bat
