@@ -61,5 +61,14 @@ END
 For more information about accessibility in OpenOffice.org/LibreOffice documents, read
 http://webaim.org/techniques/ooo/
 END
+,'axLatex' => <<<END
+At this time, there is unfortunately no well known recipee to improve accessibility of PDF documents produced by LaTeX; your document will remain poor in term of accessibility whatever you might do, allthough some packages or combination of packages have a definite good or bad impact. Here are some suggestions to at least not make it even poorer :
+
+* Clearly define the encoding of the source with inputenc package, preferably with latin1 or utf8. This will especially help correctly interpreting greek letters in math equations
+* Where possible, use direct character unstead of entities or accenting commands, e.g. "é" unstead of "\\´e"; the later often disturb screen readers that sometimes believe to see two characters unstead of one
+* Use hyperref package with unicode option
+* Don't use fontenc package; fontenc introduce more ligatures stuff and goes against the accessibility
+* You might use pdfcomment package to add alternate text to graphics and formulas; pdfcomment adds a new command \\pdftooltip{content text}{tooltip} which adds a tooltip to the content; these tooltips are read by screen readers
+END
 );//
 ?>

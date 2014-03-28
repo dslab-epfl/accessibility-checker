@@ -61,6 +61,7 @@ $msg.="\r\n".$AXMSGS['gAxTipps'];
 if ($gen=='word') $msg.="\r\n".$AXMSGS['axWord'];
 else if ($gen=='powerpoint') $msg.="\r\n".$AXMSGS['axPpt'];
 else if ($gen=='writer') $msg.="\r\n".$AXMSGS['axOO'];
+else if ($gen=='latex') $msg.="\r\n".$AXMSGS['axLatex'];
 $o->msg = $msg;
 }
 ?>
