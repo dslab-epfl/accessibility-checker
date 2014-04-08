@@ -18,6 +18,7 @@ PdfName elname = root.getAsName(PdfName.S);
 PdfString alt = root.getAsString(PdfName.ALT);
 PdfString actualText = root.getAsString(PdfName.ACTUALTEXT);
 PdfArray ar = root.getAsArray(PdfName.K);
+PdfDictionary kDic = root.getAsDict(PdfName.K);
 PdfNumber mcid = root.getAsNumber(PdfName.K);
 String name = null;
 if (elname!=null) name = elname.toString().substring(1).toLowerCase();
@@ -27,32 +28,48 @@ if (alt!=null) xmlAddAttr("alt", alt.toUnicodeString());
 if (ar!=null) for (int i=0, N=ar.size(); i<N; i++) {
 PdfDictionary obj = ar.getAsDict(i);
 PdfNumber mcid2 = ar.getAsNumber(i);
-if (obj!=null) {
-PdfName type = obj.getAsName(PdfName.TYPE);
-if (!type.equals(PdfName.STRUCTELEM)) continue;
-pdfWalkTree(obj);
+if (obj!=null) pdfWalkStructElem(obj);
+else if (mcid2!=null) pdfWalkMCID(root, mcid2);
 }
-else if (mcid2!=null) {
-String str = getMCIDNodeText(root.getAsDict(PdfName.PG), mcid2);
-xmlAddText(str);
-}}
-else if (mcid!=null) {
-String str = getMCIDNodeText(root.getAsDict(PdfName.PG), mcid);
-xmlAddText(str);
-}
+else if (kDic!=null) pdfWalkStructElem(kDic);
+else if (mcid!=null) pdfWalkMCID(root, mcid);
 if (name!=null) xmlEndElement(name);
 }
 
-private String getPageStream (PdfDictionary page) throws IOException {
+private void pdfWalkStructElem (PdfDictionary obj) throws Exception {
+PdfName type = obj.getAsName(PdfName.TYPE);
+if (type==null || !type.equals(PdfName.STRUCTELEM)) return;
+pdfWalkTree(obj);
+}
+
+private void pdfWalkMCID (PdfDictionary root, PdfNumber mcid) throws Exception {
+String str = getMCIDNodeText(root.getAsDict(PdfName.PG), mcid);
+xmlAddText(str);
+}
+
+private String streamToString (PdfStream stream) throws Exception {
+return new String(PdfReader.getStreamBytes((PRStream)stream));
+}
+
+private String getPageStream (PdfDictionary page) throws Exception {
 String str = pageStreams.get(page);
 if (str!=null) return str;
-PRStream stream = (PRStream)(page.getAsStream(PdfName.CONTENTS));
-str = new String(PdfReader.getStreamBytes(stream));
+PdfStream stream = page.getAsStream(PdfName.CONTENTS);
+PdfArray ar = page.getAsArray(PdfName.CONTENTS);
+if (stream!=null) str = streamToString(stream);
+else if (ar!=null) {
+StringBuilder sb = new StringBuilder();
+for (int i=0, N=ar.size(); i<N; i++) {
+stream = ar.getAsStream(i);
+if (stream!=null) sb.append(streamToString(stream)).append("\n");
+}
+str = sb.toString();
+}
 pageStreams.put(page,str);
 return str;
 }
 
-private String getMCIDNodeText (PdfDictionary page, PdfNumber mcid) throws IOException {
+private String getMCIDNodeText (PdfDictionary page, PdfNumber mcid) throws Exception {
 String data = getPageStream(page);
 int startPos = data.indexOf("<</MCID " + mcid.intValue() + "");
 if (startPos<0) return null;
