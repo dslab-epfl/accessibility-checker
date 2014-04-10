@@ -9,8 +9,9 @@ To understand what is PDF tags and why they are important, read
 
 To produce a tagged PDF, make sure that the relevant export options are set correctly.
 
-Use effectively the native "save as", "export"  or plugin features of your editor.
-Never use PDF virtual printers such as PDFCreator, or features like "Print to PDF"; all structural information as well as tagging is lost when this way of creating PDF is used.
+* Use effectively the native "save as", "export"  or plugin features of your editor.
+* Never use PDF virtual printers such as PDFCreator, or features like "Print to PDF"; all structural information as well as tagging is lost when this way of creating PDF is used.
+* Don't create a PDF directly out of scanned paper. There is no way to access the text of PDF generated that way. If you have no alternative to scanned paper, you must perform an optical character recognition (OCR), and rebuild missing structure yourself after the OCR extracted the text. OCR can recognize text but never structures such as headings, lists, tables, etc.
 END
 ,'officeSave' => <<<END
 There are multiple ways to produce tagged PDFs from Word or PowerPoint :
@@ -69,6 +70,39 @@ At this time, there is unfortunately no well known recipee to improve accessibil
 * Use hyperref package with unicode option
 * Don't use fontenc package; fontenc introduce more ligatures stuff and goes against the accessibility
 * You might use pdfcomment package to add alternate text to graphics and formulas; pdfcomment adds a new command \\pdftooltip{content text}{tooltip} which adds a tooltip to the content; these tooltips are read by screen readers
+END
+,'GTaggedButErrors' => <<<'END'
+Your PDF document has been checked for accessibility, and some issues have been found. Fixing them will improve the accessibility of your document, especially if you fix levels 1 and most of level 2 ones.
+
+Problems are classified in three levels of importance:
+* Problems of level 1 are critical and may disallow certain users to access important contents of your document. If you have no time, please at least try to fix these ones.
+* Problems of level 2 may disallow certain users to access some contents of your document, or may let them to read your document much more comfortably if they are fixed. It would be good if you could fix them, but they are a bit less urgent than level 1.
+* Problems of level 3 may help your document to be read more comfortably by some users; you aren't required to fix them, as they are often harder or more time consuming to proceed; but it would be great if you could take a look at them as well.
+END
+,'tBadAlt' => <<<'END'
+Level 1: $n missing or unappropriate alternate text for figures and/or formulas
+Alternate text aka simply alt must be present on all figures and formulas. They must briefly describe what they are attached to, and are important for people who can't see them visually.
+* For formulas, alt text should contain a textual representation of the math expression, i.e. corresponding LaTeX code, or like such a formula would be typed in a programming language
+* For imagee that are also links or trigger something when clicked, alt text shouldn't describe the image itself but its function, i.e. what a click does, or where the link leads to; e.g. 
+* For complex figures like schemas, diagrams, graphics, etc. a full textual description or tables of data used should ideally be present or be referenced at some other place in the document in case the alt is going to be long
+* For other images and illustrations, use common sens to make a description that is as short, or as long as it is required to reasonnably understand your document. You can put an empty alt text for images that are purely illustrative (in that case, make the difference between empty but present alt text, allowed and sometimes useful, and total absence of alt text, just bad).
+END
+,'tBadHeadings' => <<<'END'
+Level 1: heading structure mixed up
+Headings are very important because they allow users to navigate more quickly in your document, but they can do so only if they have a correct structure. Allthough your document contain headings, they appear to be mixed up or incorrectly nested.
+For example, an heading of level 3 shouldn't directly follow an heading of level 1 without any heading of level 2 in between, or otherwise said, you shouldn't skip heading levels. Equally, the first heading of the document must be of level 1.
+We found $n headings that appear to be incorrect in such a way.
+END
+,'tNoHeadings' => <<<'END'
+Level 1: your document doesn't contain any heading
+Headings are very important because  they :
+* greatly help navigating in your document, even if it contains a table of contents
+* allow users to have a quick overview of it at any time thank to automatic anchors
+* help web search engines better reference your document
+* help you to better organize your thinking
+
+Make sure to use appropriate functionalities of your editor to define headings. In particular, use styling facilities in editors like Word or Open office, and stop using font/size/color quick formatting; making some text bigger makes it an heading visually, but it is still ordinary text for a computer if you don't specifiy it precisely.
+In many cases, this issue shows up because of that later reason.
 END
 );//
 ?>

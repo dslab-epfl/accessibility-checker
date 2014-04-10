@@ -1,5 +1,6 @@
 <?php
 define('PDFINFO_PATH', 'C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\pdfinfo.exe');
+define('TAGGED_ANALYZER_PATH', 'java -jar C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\analyzer.jar');
 
 require_once(dirname(__FILE__).'/msgs.php');
 
@@ -48,11 +49,32 @@ if (preg_match('/OpenOffice\.org/i', $info->Producer)) return 'writer';
 return 'unknown';
 }
 
+function taggedAnalysis ($file) {
+exec(TAGGED_ANALYZER_PATH .' '. escapeshellarg($file), $lines, $retval);
+$o = new stdClass();
+foreach($lines as $l) {
+list($key, $val) = explode(':', $l);
+$key=trim($key);
+$val = trim($val);
+$o->$key = $val;
+}
+return $o;
+}
+
 function CheckPDFForAccessibility ($o) {
 $info = pdfinfo($o->file);
-if ($info->Tagged==='yes') return true; // For the moment, to keep it simple, consider that a tagged PDF don't need any further check
+if ($info->Tagged==='yes') {
+global $AXMSGS;
+$msg = $AXMSGS['GTaggedButErrors'];
+$re = taggedAnalysis($o->file);
+foreach ($re as $key=>$num) {
+$msg .= "\r\n\r\n" .str_replace('$n', $num, $AXMSGS["t$key"]);
+}
+$msg .= "\r\n\r\n" .$AXMSGS['gAxTipps'];
+$o->msg = $msg;
+}
+else {
 $gen = determineGenerator($info);
-
 global $AXMSGS;
 $msg = $AXMSGS['gNotTagged'];
 if ($gen=='word' || $gen=='powerpoint') $msg.="\r\n".$AXMSGS['officeSave'];
@@ -62,6 +84,7 @@ if ($gen=='word') $msg.="\r\n".$AXMSGS['axWord'];
 else if ($gen=='powerpoint') $msg.="\r\n".$AXMSGS['axPpt'];
 else if ($gen=='writer') $msg.="\r\n".$AXMSGS['axOO'];
 else if ($gen=='latex') $msg.="\r\n".$AXMSGS['axLatex'];
+}
 $o->msg = $msg;
 }
 ?>

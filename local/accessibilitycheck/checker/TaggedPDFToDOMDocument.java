@@ -38,11 +38,13 @@ if (name!=null) xmlEndElement(name);
 
 private void pdfWalkStructElem (PdfDictionary obj) throws Exception {
 PdfName type = obj.getAsName(PdfName.TYPE);
-if (type==null || !type.equals(PdfName.STRUCTELEM)) return;
-pdfWalkTree(obj);
+if (type==null) return;
+else if (type.equals(PdfName.STRUCTELEM)) pdfWalkTree(obj);
+else if (type.equals(PdfName.MCR)) pdfWalkMCID(obj, obj.getAsNumber(PdfName.MCID));
 }
 
 private void pdfWalkMCID (PdfDictionary root, PdfNumber mcid) throws Exception {
+if (root==null || mcid==null) return;
 String str = getMCIDNodeText(root.getAsDict(PdfName.PG), mcid);
 xmlAddText(str);
 }
@@ -54,6 +56,7 @@ return new String(PdfReader.getStreamBytes((PRStream)stream));
 private String getPageStream (PdfDictionary page) throws Exception {
 String str = pageStreams.get(page);
 if (str!=null) return str;
+if (page==null) return null;
 PdfStream stream = page.getAsStream(PdfName.CONTENTS);
 PdfArray ar = page.getAsArray(PdfName.CONTENTS);
 if (stream!=null) str = streamToString(stream);
@@ -71,6 +74,7 @@ return str;
 
 private String getMCIDNodeText (PdfDictionary page, PdfNumber mcid) throws Exception {
 String data = getPageStream(page);
+if (data==null) return null;
 int startPos = data.indexOf("<</MCID " + mcid.intValue() + "");
 if (startPos<0) return null;
 int endPos = data.indexOf("<</MCID", startPos+1);
