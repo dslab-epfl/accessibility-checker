@@ -65,14 +65,15 @@ function CheckPDFForAccessibility ($o) {
 $info = pdfinfo($o->file);
 if ($info->Tagged==='yes') {
 global $AXMSGS;
-$msg = $AXMSGS['GTaggedButErrors'];
 $re = taggedAnalysis($o->file);
+if (count($re)>0) {
+$msg = $AXMSGS['GTaggedButErrors'];
 foreach ($re as $key=>$num) {
-$msg .= "\r\n\r\n" .str_replace('$n', $num, $AXMSGS["t$key"]);
+if (isset($AXMSGS["t$key"])) $msg .= "\r\n\r\n" .str_replace('$n', $num, $AXMSGS["t$key"]);
 }
 $msg .= "\r\n\r\n" .$AXMSGS['gAxTipps'];
 $o->msg = $msg;
-}
+}}
 else {
 $gen = determineGenerator($info);
 global $AXMSGS;

@@ -104,5 +104,16 @@ Headings are very important because  they :
 Make sure to use appropriate functionalities of your editor to define headings. In particular, use styling facilities in editors like Word or Open office, and stop using font/size/color quick formatting; making some text bigger makes it an heading visually, but it is still ordinary text for a computer if you don't specifiy it precisely.
 In many cases, this issue shows up because of that later reason.
 END
+,'tInvalidTagging' => <<<'END'
+Level 2: potentially problematic tagging
+We found some elements in the structure that are unproperly nested or mixed up in some way that might prevent assistive tools to correctly read your document.
+For example :
+* A  list must only contain list items, which itself must only contain list labels and list bodies.
+* Tables must contain either only rows, or header/body/footer, and table rows must only contain header cells and data cells
+* Headings aren't supposed to contain entire paragraphs
+* etc.
+Unfortunately, if the tagging has been made by usual text processors like Word, it ma be hard to determine what exactly caused it to generate bad structure. Fixing it in Acrobat Pro might be needed.
+We found $n points in the structure that might cause problems to assistive tools.
+END
 );//
 ?>

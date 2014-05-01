@@ -11,7 +11,7 @@ private PdfReader pdf;
 private Document doc;
 private Element curEl;
 private Map<PdfName,PdfName> roleMap = new HashMap<>();
-private Map<PdfDictionary,String> pageStreams = new HashMap<>();
+private Map<PdfDictionary,Map<Integer,String>> pages = new HashMap<>();
 
 private PdfName pdfMapRole (PdfName name) {
 if (roleMap.containsKey(name)) return pdfMapRole(roleMap.get(name));
@@ -32,6 +32,7 @@ alt = root.getAsString(PdfName.ALT),
 actualText = root.getAsString(PdfName.ACTUALTEXT),
 title = root.getAsString(PdfName.T),
 abbr = root.getAsString(PdfName.E),
+id = root.getAsString(PdfName.ID),
 lang = root.getAsString(PdfName.LANG);
 PdfName elname = root.getAsName(PdfName.S);
 PdfDictionary aDic = root.getAsDict(PdfName.A);
@@ -47,6 +48,7 @@ else if (aAr!=null) for (int i=0, N=aAr.size(); i<N; i++) {
 aDic = aAr.getAsDict(i);
 if (aDic!=null) pdfWalkAttrs(aDic);
 }
+if (id!=null) xmlAddAttr("id", id.toUnicodeString());
 if (alt!=null) xmlAddAttr("alt", alt.toUnicodeString());
 if (title!=null) {
 String str = title.toUnicodeString().trim();
@@ -113,58 +115,16 @@ String str = getMCIDNodeText(root.getAsDict(PdfName.PG), mcid);
 xmlAddText(str);
 }
 
-private String streamToString (PdfStream stream) throws Exception {
-return new String(PdfReader.getStreamBytes((PRStream)stream));
-}
-
-private String getPageStream (PdfDictionary page) throws Exception {
-String str = pageStreams.get(page);
-if (str!=null) return str;
-if (page==null) return null;
-PdfStream stream = page.getAsStream(PdfName.CONTENTS);
-PdfArray ar = page.getAsArray(PdfName.CONTENTS);
-if (stream!=null) str = streamToString(stream);
-else if (ar!=null) {
-StringBuilder sb = new StringBuilder();
-for (int i=0, N=ar.size(); i<N; i++) {
-stream = ar.getAsStream(i);
-if (stream!=null) sb.append(streamToString(stream)).append("\n");
-}
-str = sb.toString();
-}
-pageStreams.put(page,str);
-return str;
-}
-
 private String getMCIDNodeText (PdfDictionary page, PdfNumber mcid) throws Exception {
-String data = getPageStream(page);
-if (data==null) return null;
-int startPos = data.indexOf("<</MCID " + mcid.intValue() + "");
-if (startPos<0) return null;
-int endPos = data.indexOf("<</MCID", startPos+1);
-if (endPos<0) endPos = data.length();
-//System.out.println("Content={\r\n"+data.substring(startPos,endPos)+"\r\n}");
-Matcher m = Pattern.compile("^([^\r\n]+)\\s*Tj$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE).matcher(data);
-if (!m.find(startPos)) return null;
-StringBuilder sb = new StringBuilder();
-do {
-parseTj(sb, m.group(1));
-} while (m.find() && m.start()<endPos);
-return sb.toString();
+Map<Integer,String> mcidMap = pages.get(page);
+if (mcidMap==null) {
+PDFTextExtractor te = new PDFTextExtractor();
+te.process(page);
+mcidMap = te.getAllMCID();
+pages.put(page,mcidMap);
 }
-
-private void parseTj (StringBuilder sb, String tj) {
-tj = tj
-.replace("\\(", "\u0001")
-.replace("\\)", "\u0002");
-Matcher m = Pattern.compile("\\(([^()]+)\\)").matcher(tj);
-while (m.find()) {
-String s = m.group(1);
-s = s
-.replace("\u0001", "(")
-.replace("\u0002", ")");
-sb.append(s);
-}}
+return mcidMap.get(mcid.intValue());
+}
 
 private String xmlToString (PdfObject o) {
 if (o instanceof PdfString) return ((PdfString)o).toUnicodeString();
