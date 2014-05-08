@@ -11,7 +11,7 @@ private PdfReader pdf;
 private Document doc;
 private Element curEl;
 private Map<PdfName,PdfName> roleMap = new HashMap<>();
-private Map<PdfDictionary,Map<Integer,String>> pages = new HashMap<>();
+private Map<PdfDictionary,Map<Integer,Node[]>> pages = new HashMap<>();
 
 private PdfName pdfMapRole (PdfName name) {
 if (roleMap.containsKey(name)) return pdfMapRole(roleMap.get(name));
@@ -83,8 +83,7 @@ xmlAddAttr(name.toString().substring(1).toLowerCase(), obj);
 
 private void pdfWalkStructElem (PdfDictionary obj) throws Exception {
 PdfName type = obj.getAsName(PdfName.TYPE);
-if (type==null) return;
-else if (type.equals(PdfName.STRUCTELEM)) pdfWalkTree(obj);
+if (type==null || type.equals(PdfName.STRUCTELEM)) pdfWalkTree(obj);
 else if (type.equals(PdfName.MCR)) pdfWalkMCID(obj, obj.getAsNumber(PdfName.MCID));
 else if (type.equals(PdfName.OBJR)) pdfWalkObjRef(obj.getAsDict(PdfName.OBJ));
 }
@@ -111,14 +110,14 @@ xmlEndElement("annot");
 
 private void pdfWalkMCID (PdfDictionary root, PdfNumber mcid) throws Exception {
 if (root==null || mcid==null) return;
-String str = getMCIDNodeText(root.getAsDict(PdfName.PG), mcid);
-xmlAddText(str);
+Node[] nodes = getNodesByMCID(root.getAsDict(PdfName.PG), mcid);
+if (nodes!=null) xmlAddNodes(nodes);
 }
 
-private String getMCIDNodeText (PdfDictionary page, PdfNumber mcid) throws Exception {
-Map<Integer,String> mcidMap = pages.get(page);
+private Node[] getNodesByMCID (PdfDictionary page, PdfNumber mcid) throws Exception {
+Map<Integer,Node[]> mcidMap = pages.get(page);
 if (mcidMap==null) {
-PDFTextExtractor te = new PDFTextExtractor();
+PDFTextExtractor te = new PDFTextExtractor(doc, false);
 te.process(page);
 mcidMap = te.getAllMCID();
 pages.put(page,mcidMap);
@@ -165,20 +164,24 @@ private void xmlAddText (String str) throws Exception {
 curEl.appendChild(doc.createTextNode(str));
 }
 
+private void xmlAddNodes (Node... nodes) throws Exception {
+for (Node n: nodes) curEl.appendChild(n);
+}
+
 public Document getDocument () { return doc; }
+public Map<PdfName,PdfName> getRoleMap () { return roleMap; }
+public PdfDictionary getCatalog () { return pdf.getCatalog(); }
 
 public TaggedPDFToDOMDocument readPDF (String filename) throws Exception {
 doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 pdf = new PdfReader(filename);
-PdfDictionary root = pdf.getCatalog().getAsDict(PdfName.STRUCTTREEROOT);
+PdfDictionary catalog = pdf.getCatalog();
+PdfDictionary root = catalog.getAsDict(PdfName.STRUCTTREEROOT);
 PdfDictionary roleMap = root.getAsDict(PdfName.ROLEMAP);
+PdfDictionary outline = catalog.getAsDict(PdfName.OUTLINES);
 pdfWalkRoleMap(roleMap);
 pdfWalkTree(root);
 return this;
-}
-
-public static Document process (String filename) throws Exception {
-return new TaggedPDFToDOMDocument() .readPDF(filename) .getDocument();
 }
 
 }

@@ -1,0 +1,61 @@
+Done = This point of the protocol is verified
+Doable = This point of the protocol could probably be verified, but is not done at the moment
+Unsupported = This point of the protocol will for sure never be verified, or at least not within the frame of the semester project. It is too complicated, or I need a much more substancial background in order to be able to do something for it.
+Unknown = This point of the protocol may be verifiable or not, I don't know; I haven't yet all the required background, or haven't yet read enough documentations to know or decide
+
+Checkpoint 1: tagging and artifacts
+01-003: doable
+01-004: doable
+01-005: doable
+Checkpoint 2: role mapping
+02-001: done
+02-003: done
+02-004: done
+Checkpoint 6: metadata
+06-001: doable
+06-002: doable
+06-003: doable
+Checkpoint 7: dictionaries
+07-001: unknown
+07-002: unknown
+Checkpoint 8: OCR
+08-003: unknown
+Checkpoint 9: tagging
+09-004: done
+09-005: done
+09-006: done
+09-007: done
+09-008: done
+Checkpoint 10: unicode and character mapping
+10-001: unknown
+Chapter 11: language
+11-001: done
+11-002: done
+11-003: doable
+11-004: unknown
+11-005: unsupported
+11-006: unknown
+Checkpoint 13: figures
+13-004: done
+Checkpoint 14: heading structure
+14-002: done
+14-003: done
+14-006: doable
+14-007: done
+Checkpoint 15: tables
+15-003: doable
+15-004: done
+Checkpoint 17: formulas
+17-002: done
+17-003: unknown
+Checkpoint 19: notes
+19-003: doable
+19-004: doable
+Checkpoint 20: optional contents: All unknown
+Checkpoint 21: embedded files: All unsupported
+Checkpoint 24: forms: All unsupported
+Checkpoint 25: XFA: all unsupported
+Checkpoint 26: navigation: all unsupported
+Checkpoint 28: annotations: all unknown
+Checkpoint 30: XObjects: all unknown
+Checkpoint 31: fonts: all unknown

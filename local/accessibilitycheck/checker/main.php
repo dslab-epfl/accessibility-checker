@@ -53,6 +53,7 @@ function taggedAnalysis ($file) {
 exec(TAGGED_ANALYZER_PATH .' '. escapeshellarg($file), $lines, $retval);
 $o = new stdClass();
 foreach($lines as $l) {
+if ($l&&substr($l,0,2)=='- ') continue; // jump over detailled messages
 list($key, $val) = explode(':', $l);
 $key=trim($key);
 $val = trim($val);
@@ -63,6 +64,7 @@ return $o;
 
 function CheckPDFForAccessibility ($o) {
 $info = pdfinfo($o->file);
+$gen = determineGenerator($info);
 if ($info->Tagged==='yes') {
 global $AXMSGS;
 $re = taggedAnalysis($o->file);
@@ -70,12 +72,12 @@ if (count($re)>0) {
 $msg = $AXMSGS['GTaggedButErrors'];
 foreach ($re as $key=>$num) {
 if (isset($AXMSGS["t$key"])) $msg .= "\r\n\r\n" .str_replace('$n', $num, $AXMSGS["t$key"]);
+if (isset($AXMSGS["t{$key}_{$gen}"])) $msg .= "\r\n\r\n" .$AXMSGS["t{$key}_{$gen}"];
 }
 $msg .= "\r\n\r\n" .$AXMSGS['gAxTipps'];
 $o->msg = $msg;
 }}
 else {
-$gen = determineGenerator($info);
 global $AXMSGS;
 $msg = $AXMSGS['gNotTagged'];
 if ($gen=='word' || $gen=='powerpoint') $msg.="\r\n".$AXMSGS['officeSave'];
