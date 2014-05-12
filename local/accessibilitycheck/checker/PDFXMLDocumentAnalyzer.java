@@ -170,7 +170,7 @@ List<Node> tc = childNodes(table);
 if (captions.size()>1) message("InvalidTagging", "MH09-004: a table must contain at most a single caption element"); // only a single <caption> is allowed per table 
 else if (captions.size()==1) {
 Element caption = captions.get(0);
-if (!tc.get(0).equals(caption) && !tc.get(tc.size() -1).equals(caption)) message("InvalidTagging", "MH09-004: the caption element must be the first or the last one in the table element"); // if present, <caption> must be wheither the first or the last element of the table 
+if (!tc.get(0).equals(caption) && !tc.get(tc.size() -1).equals(caption)) message("InvalidTagging", "MH09-004: the caption element must be the first or the last one in the table element"); // if present, <caption> must be either the first or the last element of the table 
 }
 
 int nTr=0, nTbody=0, nThead=0, nTfoot=0;
@@ -186,7 +186,7 @@ nThead++;
 else if (tn.equals("tbody")) nTbody++;
 else if (tn.equals("tfoot")) nTfoot++;
 }
-if (nTr>0 && (nThead>0 || nTbody>0 || nTfoot>0)) message("InvalidTagging", "MH09-004: a table can contain wheither thead+tbody+tfoot or tr, but not both"); // A table must consist of <tr> only, or <thead> + <tbody> + <tfoot> only, but not mix both
+if (nTr>0 && (nThead>0 || nTbody>0 || nTfoot>0)) message("InvalidTagging", "MH09-004: a table can contain either thead+tbody+tfoot or tr, but not both"); // A table must consist of <tr> only, or <thead> + <tbody> + <tfoot> only, but not mix both
 
 boolean hasTh=false;
 int nCellsPerRow=0;
@@ -196,7 +196,7 @@ if (nTh>0) hasTh=true;
 if (nCellsPerRow<=0) nCellsPerRow = nTd+nTh;
 if (nTd+nTh!=nCellsPerRow) message("TableIrregular", "Warning: Irregular tables that don't have a constant number of columns in each row aren't advisable and should be avoided"); // Irregular tables, i.e. not having always the same number of columns in each row aren't advisable
 }
-if (!hasTh) message("TableNoTh", "Warning: data tables should have header cells"); // Data tables must have header cells; if they don't have, it probably means that they are presentational, in which case they shouldn't ahve been tagged as table at the first place. (MH15-004)
+if (!hasTh) message("TableNoTh", "Warning: data tables should have header cells"); // Data tables must have header cells; if they don't have, it probably means that they are presentational, in which case they shouldn't have been tagged as table at the first place. (MH15-004)
 // other check to do in tables
 }
 
