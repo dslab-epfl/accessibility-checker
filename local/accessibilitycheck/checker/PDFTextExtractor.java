@@ -7,12 +7,13 @@ import org.w3c.dom.*;
 
 public class PDFTextExtractor implements RenderListener {
 
-private static abstract class OperatorObserver implements ContentOperator {
-private ContentOperator chainedOperator;
-private void setChainedOperator (ContentOperator op) {  chainedOperator=op; }
+public static abstract class OperatorObserver implements ContentOperator {
+private Map<String,ContentOperator> chainedOperators = new HashMap<String,ContentOperator>();
+private void setChainedOperator (String operator, ContentOperator co) { chainedOperators.put(operator,co); }
 public abstract boolean invoke (String op, List<PdfObject> args);
 public void invoke (PdfContentStreamProcessor processor, PdfLiteral op, ArrayList<PdfObject> args) throws Exception {
-if (invoke(op.toString(), args) && chainedOperator!=null) chainedOperator.invoke(processor, op, args);
+String opStr = op.toString();
+if (invoke(opStr, args) && chainedOperators.containsKey(opStr)) chainedOperators.get(opStr).invoke(processor, op, args);
 }}
 
 private class Info {
@@ -68,18 +69,20 @@ PdfContentStreamProcessor processor;
 Map<Integer,Info> texts = new TreeMap<Integer,Info>();
 boolean watchStyles;
 
-public PDFTextExtractor (Document d, boolean ws) {
-watchStyles=ws;
-doc = d;
+public PDFTextExtractor () {
 processor = new PdfContentStreamProcessor(this);
 }
 
+public void setDocument (Document d) { doc=d; }
+public void setWatchStyles (boolean b) { watchStyles=b; }
+
 public void registerOperator  (String operator, OperatorObserver observer) {
-observer.setChainedOperator(processor.registerContentOperator(operator, observer));
+observer.setChainedOperator(operator, processor.registerContentOperator(operator, observer));
 }
 
 public void process (PdfDictionary page) throws IOException {
 if (page==null) return;
+texts.clear();
 processor.reset();
 PdfDictionary resources = page.getAsDict(PdfName.RESOURCES);
 PdfStream stream = page.getAsStream(PdfName.CONTENTS);

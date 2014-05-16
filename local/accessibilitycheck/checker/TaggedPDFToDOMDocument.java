@@ -7,6 +7,7 @@ import com.itextpdf.text.pdf.*;
 
 public class TaggedPDFToDOMDocument {
 
+private PDFTextExtractor textExtractor = new PDFTextExtractor();
 private PdfReader pdf;
 private Document doc;
 private Element curEl;
@@ -117,9 +118,8 @@ if (nodes!=null) xmlAddNodes(nodes);
 private Node[] getNodesByMCID (PdfDictionary page, PdfNumber mcid) throws Exception {
 Map<Integer,Node[]> mcidMap = pages.get(page);
 if (mcidMap==null) {
-PDFTextExtractor te = new PDFTextExtractor(doc, false);
-te.process(page);
-mcidMap = te.getAllMCID();
+textExtractor.process(page);
+mcidMap = textExtractor.getAllMCID();
 pages.put(page,mcidMap);
 }
 return mcidMap.get(mcid.intValue());
@@ -171,9 +171,12 @@ for (Node n: nodes) curEl.appendChild(n);
 public Document getDocument () { return doc; }
 public Map<PdfName,PdfName> getRoleMap () { return roleMap; }
 public PdfDictionary getCatalog () { return pdf.getCatalog(); }
+public PDFTextExtractor getTextExtractor () { return textExtractor; }
 
-public TaggedPDFToDOMDocument readPDF (String filename) throws Exception {
+public void readPDF (String filename) throws Exception {
 doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+textExtractor.setDocument(doc);
+textExtractor.setWatchStyles(false);
 pdf = new PdfReader(filename);
 PdfDictionary catalog = pdf.getCatalog();
 PdfDictionary root = catalog.getAsDict(PdfName.STRUCTTREEROOT);
@@ -181,7 +184,6 @@ PdfDictionary roleMap = root.getAsDict(PdfName.ROLEMAP);
 PdfDictionary outline = catalog.getAsDict(PdfName.OUTLINES);
 pdfWalkRoleMap(roleMap);
 pdfWalkTree(root);
-return this;
 }
 
 }

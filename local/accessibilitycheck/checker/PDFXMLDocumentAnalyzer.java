@@ -19,6 +19,7 @@ private static Map<String,Rule> rules = new HashMap<String,Rule>();
 
 private Document doc;
 private PdfDictionary catalog;
+private List<PdfName> markedContentElements = new ArrayList<PdfName>();
 private Map<PdfName,PdfName> roleMap;
 private Map<String,Integer> msgs = new HashMap<String,Integer>();
 
@@ -53,6 +54,8 @@ rules.put("warichu", new Rule(array("wt", "wp"), false));
 
 public PDFXMLDocumentAnalyzer (String filename) throws Exception {
 TaggedPDFToDOMDocument cvt = new TaggedPDFToDOMDocument();
+cvt.getTextExtractor().registerOperator("BDC", new PDFTextExtractor.OperatorObserver(){ public boolean invoke (String op, List<PdfObject> args){ encounterBDC(args); return true; }});
+cvt.getTextExtractor().registerOperator("EMC", new PDFTextExtractor.OperatorObserver(){ public boolean invoke (String op, List<PdfObject> args){ encounterEMC(args); return true; }});
 cvt.readPDF(filename);
 doc = cvt.getDocument();
 roleMap = cvt.getRoleMap();
@@ -119,6 +122,20 @@ if (
 ) return i;
 }
 return -1;
+}
+
+public void encounterBDC (List<PdfObject> l) {
+if (l.size()<1 || !(l.get(0) instanceof PdfName)) return;
+PdfName type = (PdfName)l.get(0);
+boolean isArtifact = type.equals(PdfName.ARTIFACT), containsArtifacts = markedContentElements.contains(PdfName.ARTIFACT), notEmpty = markedContentElements.size()>0;
+markedContentElements.add(type);
+if (isArtifact && notEmpty && !containsArtifacts) message( "MixedArtifactAndTaggedContents", "MH01-003: artifacts present in tagged contents");
+if (!isArtifact && notEmpty && containsArtifacts) message( "MixedArtifactAndTaggedContents", "MH01-004: tagged contents present in artifacts");
+}
+
+public void encounterEMC (List<PdfObject> l) {
+if (markedContentElements.size()<=0) message("BDCEMCMissmatch", "ISO-32000-2008: missmatched BDC/EMC tags");
+else markedContentElements.remove(markedContentElements.size() -1);
 }
 
 /** Validate some other PDF aspects, outside of the XML document part */
@@ -189,14 +206,25 @@ else if (tn.equals("tfoot")) nTfoot++;
 if (nTr>0 && (nThead>0 || nTbody>0 || nTfoot>0)) message("InvalidTagging", "MH09-004: a table can contain wheither thead+tbody+tfoot or tr, but not both"); // A table must consist of <tr> only, or <thead> + <tbody> + <tfoot> only, but not mix both
 
 boolean hasTh=false;
+boolean hasAttrHeaders=false, hasNoAttrScope=false;
 int nCellsPerRow=0;
-for (Element e: getElementsByTagName(table, "tr")) {
-int nTd = e.getElementsByTagName("td") .getLength(), nTh = e.getElementsByTagName("th").getLength();
+for (Element tr: getElementsByTagName(table, "tr")) {
+int nTd = 0, nTh=0;
+for (Element th: getElementsByTagName(tr, "th")) {
+if (!th.hasAttribute("id") && !th.hasAttribute("scope")) message("tableThNoScope", "MH15-003: th must have wheither a scope or an id attribute");
+if (!th.hasAttribute("scope")) hasNoAttrScope=true;
+nTh++;
+}
+for (Element td: getElementsByTagName(tr, "td")) {
+if (td.hasAttribute("headers")) hasAttrHeaders=true;
+nTd++;
+}
 if (nTh>0) hasTh=true;
 if (nCellsPerRow<=0) nCellsPerRow = nTd+nTh;
-if (nTd+nTh!=nCellsPerRow) message("TableIrregular", "Warning: Irregular tables that don't have a constant number of columns in each row aren't advisable and should be avoided"); // Irregular tables, i.e. not having always the same number of columns in each row aren't advisable
+if (nTd+nTh!=nCellsPerRow && !hasAttrHeaders) message("TableIrregular", "Warning: Irregular tables that don't have a constant number of columns in each row aren't advisable and should be avoided"); // Irregular tables, i.e. not having always the same number of columns in each row aren't advisable
 }
 if (!hasTh) message("TableNoTh", "Warning: data tables should have header cells"); // Data tables must have header cells; if they don't have, it probably means that they are presentational, in which case they shouldn't ahve been tagged as table at the first place. (MH15-004)
+if (hasNoAttrScope && !hasAttrHeaders) message("TableMissingScopeOrHeaders", "MH15-003: header cells must all have a scope attributes, or cells headers must be explicitely specified with id/headers");
 // other check to do in tables
 }
 

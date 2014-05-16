@@ -1,0 +1,83 @@
+= Moodle accessibility checker plugin
+
+== Introduction
+This moodle plugin encourages teachers to make accessible course material by checking, each time they upload a PDF file, if it is accessible.
+If it is not, or only partially because potential problems have been detected, an information message is displayed telling that their file isn't accessible or which problems there might be, and what they should do to improve it.
+
+Rather than being generic and technical, as most other accessibility checkers tools usually do, advices given by this plugin try to be as simple as possible and contextualized depending on the word processing software used to produce the PDF file, so that professors that aren't used to computers and especially not with accessibiliy-related issues can understand easily what issues are about and how they are supposed to fix them in their favorite programs.
+It is no doubt that, if problems and the way to solve them are explained simply, professors are likely to effectively fix them if it takes them only reasonnable time. People are often ready to help in accessibility, if they are shown what to do.
+Deeply technical-oriented checkers are unfortunately of no help with people that may not be familiar with accessibility, word processing advanced concepts, or computers in general. It has been observed that, most often, documents on the web aren't accessible because of ignorance, not because of unwillingness or lake of time.
+
+== Installing the plugin
+
+This accessibility checker plugin is composed of multiple parts, so its installation is unfortunately not as easy as one would like.
+
+=== Patching moodle
+First step is installing moodle, or patch it if it is already done.
+Patching is required because some internal features don't exist in the base version. 
+More specifically, the patch adds the possibility for a plugin to be notified when a teacher uploads a file. Being notified when a file is uploaded exists since a long time for students, to allow auto-grading, anti-cheat checking and such likes, but what instructors upload at all has never been verified in any way before, so this function needs to be added.
+
+You can download the entire moodle distribution already patched, or only the patch alone.
+Version 2.6.2 of moodle has been used as a base. If you are already using a different version, you might have to apply the patch mor or less manually.
+
+=== Installing the plugin
+Once moodle is running and patched, you need to install the plugin itself.
+
+Download the plugin itself. All files must go under local/accessibilitycheck/
+
+Once all files have been copied, connect to moodle administration at http://..../admin. It should automatically notify you that new plugins are going to be installed. Follow instructions given by moodle.
+
+=== Install pdfinfo
+The plugin uses an utility called pdfinfo to collect meta-information on uploaded PDF files. 
+If you are on linux, your standard packet manager should let you install it easily. Sometimes, it is part of the XPDF library.
+ A windows version exists as a part of GNUWin32 project, or you can download it directly here.
+
+=== Install Java 7
+The plugin also uses a Java program to analyze PDF files. Java must be installed if it isn't already.
+You will find Java Runtime Environment on Oracle's website.
+You must install the JRE 7 or JDK 7; it may work with Java 6, but it hasn't been tested.
+
+=== Install iText library for Java
+
+The java program which analyzes PDF files is using a PDF library called iText. You can download it from http://www.itextpdf.com
+You need at least version 5.5; newer versions should work as well.
+
+Put all downloaded jar files in lib/ext/ or jre/lib/ext directory of your Java installation.
+Alternatively, you can add them to your classpath or specify them explicitely on program's command line (see below).
+
+== Configure the plugin
+
+Before you can effectively use the plugin, there are small configurations to do. You must specify where to find pdfinfo, and how to launch the analyzer program, as well as, of course, allow php to run external programs.
+
+=== Configure php
+
+Moodle, which is in php, will use a binary program, pdfinfo, as well as another program which is in java. In order to have all that working, php must be allowed to use the function called exec.
+
+Many web hosts explicitely disallow php to use functions like exec or system, which allow it to run external programs. They usually do so for security reasons.
+Unfortunately, since the plugin uses programs that haven't been programmed in php and that wouldn't have been doable easily in php, it wont work if these functions are disallowed.
+
+To ensure they aren't disallowed, check that :
+* SAFE_MODE is disabled
+* The DISABLE_FUNCTIONS entry doesn't explicitely contain exec, system, shell_exec, escapeshell, escapeshellarg
+* pdfinfo and the jar file to execute have correct rights, and aren't forbidden by OPEN_BASEDIR
+
+All that must be configured in php.ini. In many linux and UNIX_like distributions, you will find it under /etc/php5/apache2/php.ini.
+
+=== Configure the plugin itself 
+
+Open local/accesssibilitycheck/checker/main.php in your favorite text editor, and edit the two define that are on top of the file :
+``
+define('PDFINFO_PATH', 'C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\pdfinfo.exe');
+define('TAGGED_ANALYZER_PATH', 'java -jar C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\analyzer.jar');
+`` 
+
+The first one is the path to pdfinfo. If pdfinfo is in system's path, you can juste write pdfinfo, but if not, you must put there the full path.
+The second one is the full command line to run the alalyzing program in java. Normally, your java interpreter should be in system's path, so you can just write java; otherwise you must write the full path to it. Then there is the option -jar, which specifiy to java that it has to run a program contained in a jar file; this is normally to be left as is. Finally, you must specify the full path to the jar file to be executed, i.e. where you put analyzer.jar.
+
+Unless you want to developp further the plugin, you shouldn't have to modify anothing under these two defines. There is currently nothing else to configure or customize.
+
+== Testing that it works
+
+=== Quick test
+
+=== Full test

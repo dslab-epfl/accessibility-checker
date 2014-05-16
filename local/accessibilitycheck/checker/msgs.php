@@ -87,6 +87,15 @@ Alternate text aka simply alt must be present on all figures and formulas. They 
 * For complex figures like schemas, diagrams, graphics, etc. a full textual description or tables of data used should ideally be present or be referenced at some other place in the document in case the alt is going to be long
 * For other images and illustrations, use common sens to make a description that is as short, or as long as it is required to reasonnably understand your document. You can put an empty alt text for images that are purely illustrative (in that case, make the difference between empty but present alt text, allowed and sometimes useful, and total absence of alt text, just bad).
 END
+,'tBadAlt_word'=><<<'END'
+For more information on how to set alternate text of images in word, see http://webaim.org/techniques/word/#alttext
+END
+,'tBadAlt_powerpoint'=><<<'END'
+For more information on how to set alternate text of images in power point slides, see http://webaim.org/techniques/powerpoint/#alttext
+END
+,'tBadAlt_writer'=><<<'END'
+For more information on how to set alternate text of images in open office documents, see http://webaim.org/techniques/ooo/#images
+END
 ,'tBadHeadings' => <<<'END'
 Level 1: heading structure mixed up
 Headings are very important because they allow users to navigate more quickly in your document, but they can do so only if they have a correct structure. Allthough your document contain headings, they appear to be mixed up or incorrectly nested.
@@ -104,6 +113,16 @@ Headings are very important because  they :
 Make sure to use appropriate functionalities of your editor to define headings. In particular, use styling facilities in editors like Word or Open office, and stop using font/size/color quick formatting; making some text bigger makes it an heading visually, but it is still ordinary text for a computer if you don't specifiy it precisely.
 In many cases, this issue shows up because of that later reason.
 END
+,'tNoHeadings_word'=><<<'END'
+For more information on how to use styles to add true headings in your word documents, see http://webaim.org/techniques/word/#headings
+Note that in word 2007 and above, you can use Alt+Shift+Left/Right to quickly change the heading level of a selected portion of text, as well as Ctrl+Alt+1 to 3 to directly set the style to heading level 1 to 3.
+END
+,'tNoHeadings_powerpoint'=><<<'END'
+For more information on using proper slide layout so that headings can be identified, see http://webaim.org/techniques/powerpoint/#layouts
+END
+,'tNoHeadings_writer'=><<<'END'
+For more information on how to use styles to add true headings in your open office writer documents, see http://webaim.org/techniques/ooo/#headings
+END
 ,'tInvalidTagging' => <<<'END'
 Level 2: potentially problematic tagging
 We found some elements in the structure that are unproperly nested or mixed up in some way that might prevent assistive tools to correctly read your document.
@@ -114,6 +133,24 @@ For example :
 * etc.
 Unfortunately, if the tagging has been made by usual text processors like Word, it ma be hard to determine what exactly caused it to generate bad structure. Fixing it in Acrobat Pro might be needed.
 We found $n points in the structure that might cause problems to assistive tools.
+END
+,'tTableNoTh'=><<<'END'
+Level 2: tables must have header cells; $n tables have no header cells in the document.
+All tables should have header cells. An header cell is a cell that describes what is on next cells in the same column or on the same row. Clearly identify header cells allows to :
+* Easily deduct how the table is organized
+* For screen readers, refer to it to know precisely what is in a given data cell
+* If the table continue on multiple pages, repeat them on top or on the left of each page
+
+Usually, the first row, the first column, or both, should be marked as being header cells. In more complex tables, there could be more than one row and/or more than one column of header cells, but this should be avoided as much as possible as it often makes the table harder to read.
+
+If you can't easily identify header cells you have to mark as such, it means that :
+* wheither they aren't explicitely written because you supposed that the nature of the data cells were clear enough, in which case we recommand you to add them anyway so that the whole becomes easier to read and understand
+* or you used tables to construct a layout disposition rather than to show tabular data, in which case you should try to avoid using tables alltogether for that purpose. Usually you can avoid using tables for layout by using proper alignments, float properties, or other styling features.
+END
+,'tTableIrregular'=><<<'END'
+Level 3: irregular tables should be avoided; found $n irregular tables in the document.
+A table is said to be regular if each row has the same number of columns, and if each column ahs the same number of rows. It becomes irregular as soon as some cells are joined together to make bigger cells, taking the place of more than one normal column or row.
+This should be avoided because it often makes the table harder to read, understand, and navigate in. The easiest way to avoid creating irregular tables is by not using fusion or split features once the table and its number of columns is fixed.
 END
 );//
 ?>

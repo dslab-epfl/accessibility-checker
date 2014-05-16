@@ -4,8 +4,8 @@ Unsupported = This point of the protocol will for sure never be verified, or at 
 Unknown = This point of the protocol may be verifiable or not, I don't know; I haven't yet all the required background, or haven't yet read enough documentations to know or decide
 
 Checkpoint 1: tagging and artifacts
-01-003: doable
-01-004: doable
+01-003: done
+01-004: done
 01-005: doable
 Checkpoint 2: role mapping
 02-001: done
@@ -43,7 +43,7 @@ Checkpoint 14: heading structure
 14-006: doable
 14-007: done
 Checkpoint 15: tables
-15-003: doable
+15-003: done
 15-004: done
 Checkpoint 17: formulas
 17-002: done
