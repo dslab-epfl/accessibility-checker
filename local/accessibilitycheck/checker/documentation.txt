@@ -18,7 +18,7 @@ Patching is required because some internal features don't exist in the base vers
 More specifically, the patch adds the possibility for a plugin to be notified when a teacher uploads a file. Being notified when a file is uploaded exists since a long time for students, to allow auto-grading, anti-cheat checking and such likes, but what instructors upload at all has never been verified in any way before, so this function needs to be added.
 
 You can download the entire moodle distribution already patched, or only the patch alone.
-Version 2.6.2 of moodle has been used as a base. If you are already using a different version, you might have to apply the patch mor or less manually.
+Version 2.6.2 of moodle has been used as a base. If you are already using a different version, you might have to apply the patch more or less manually.
 
 === Installing the plugin
 Once moodle is running and patched, you need to install the plugin itself.
@@ -29,7 +29,7 @@ Once all files have been copied, connect to moodle administration at http://....
 
 === Install pdfinfo
 The plugin uses an utility called pdfinfo to collect meta-information on uploaded PDF files. 
-If you are on linux, your standard packet manager should let you install it easily. Sometimes, it is part of the XPDF library.
+If you are on Linux, your standard packet manager should let you install it easily. On Debian, install package poppler-utils. In other distributions, it might be part of the XPDF library.
  A windows version exists as a part of GNUWin32 project, or you can download it directly here.
 
 === Install Java 7
@@ -77,10 +77,14 @@ define('TAGGED_ANALYZER_PATH', 'java -jar C:\\wamp\\www\\moodle\\local\\accessib
 ``` 
 
 The first one is the path to pdfinfo. If pdfinfo is in system's path, you can juste write pdfinfo, but if not, you must put there the full path.
-The second one is the full command line to run the alalyzing program in java. Normally, your java interpreter should be in system's path, so you can just write java; otherwise you must write the full path to it. Then there is the option -jar, which specifiy to java that it has to run a program contained in a jar file; this is normally to be left as is. Finally, you must specify the full path to the jar file to be executed, i.e. where you put analyzer.jar.
-If you didn't put iText jar files in the magic directory jre/lib/ext/ or lib/ext/, then you will have to specifiy them on the classpath explicitely.
+The second one is the full command line to run the analyzing program in java. Normally, your java interpreter should be in system's path, so you can just write java; otherwise you must write the full path to it. Then there is the option -jar, which specifiy to java that it has to run a program contained in a jar file; this is normally to be left as is. Finally, you must specify the full path to the jar file to be executed, i.e. where you put analyzer.jar.
+If you didn't put iText jar files in the magic directory jre/lib/ext/ or lib/ext/, then you will have to specify the classpath manually, as follows:
 
-Unless you want to developp further the plugin, you shouldn't have to modify anothing under these two defines. There is currently nothing else to configure or customize.
+```
+define('TAGGED_ANALYZER_PATH', 'java -cp /path/to/analyzer.jar:/path/to/itextpdf-5.5.0.jar PDFXMLDocumentAnalyzer');
+``` 
+
+Unless you want to develop the plugin further, you shouldn't have to modify anything under these two defines. There is currently nothing else to configure or customize.
 
 == Testing
 
