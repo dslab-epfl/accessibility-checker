@@ -4,6 +4,7 @@ import java.util.regex.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
 import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.exceptions.*;
 
 public class TaggedPDFToDOMDocument {
 
@@ -15,8 +16,9 @@ private Map<PdfName,PdfName> roleMap = new HashMap<>();
 private Map<PdfDictionary,Map<Integer,Node[]>> pages = new HashMap<>();
 
 private PdfName pdfMapRole (PdfName name) {
-if (roleMap.containsKey(name)) return pdfMapRole(roleMap.get(name));
-else return name;
+int loopBreaker=0;
+while (roleMap.containsKey(name) && ++loopBreaker<1000) name = roleMap.get(name);
+return name;
 }
 
 private void pdfWalkRoleMap (PdfDictionary rm) {
@@ -26,7 +28,7 @@ PdfName val = rm.getAsName(key);
 if (val!=null) roleMap.put(key,val);
 }}
 
-private void pdfWalkTree (PdfDictionary root) throws Exception {
+private void pdfWalkTree (PdfDictionary root) throws IOException {
 if (root==null) return;
 PdfString 
 alt = root.getAsString(PdfName.ALT),
@@ -74,7 +76,7 @@ else if (mcid!=null) pdfWalkMCID(root, mcid);
 if (name!=null) xmlEndElement(name);
 }
 
-private void pdfWalkAttrs (PdfDictionary dic) throws Exception {
+private void pdfWalkAttrs (PdfDictionary dic) throws IOException {
 if (dic==null) return;
 for (PdfName name: dic.getKeys()) {
 if (name.equals(PdfName.O) || name.equals(PdfName.R)) continue;
@@ -82,14 +84,14 @@ PdfObject obj = dic.getDirectObject(name);
 xmlAddAttr(name.toString().substring(1).toLowerCase(), obj);
 }}
 
-private void pdfWalkStructElem (PdfDictionary obj) throws Exception {
+private void pdfWalkStructElem (PdfDictionary obj) throws IOException {
 PdfName type = obj.getAsName(PdfName.TYPE);
 if (type==null || type.equals(PdfName.STRUCTELEM)) pdfWalkTree(obj);
 else if (type.equals(PdfName.MCR)) pdfWalkMCID(obj, obj.getAsNumber(PdfName.MCID));
 else if (type.equals(PdfName.OBJR)) pdfWalkObjRef(obj.getAsDict(PdfName.OBJ));
 }
 
-private void pdfWalkObjRef (PdfDictionary obj) throws Exception {
+private void pdfWalkObjRef (PdfDictionary obj) throws IOException {
 if (obj==null ) return;
 PdfName type = obj.getAsName(PdfName.TYPE);
 PdfName subtype = obj.getAsName(PdfName.SUBTYPE);
@@ -109,13 +111,13 @@ xmlAddText(contents.toUnicodeString());
 xmlEndElement("annot");
 }}
 
-private void pdfWalkMCID (PdfDictionary root, PdfNumber mcid) throws Exception {
+private void pdfWalkMCID (PdfDictionary root, PdfNumber mcid) throws IOException {
 if (root==null || mcid==null) return;
 Node[] nodes = getNodesByMCID(root.getAsDict(PdfName.PG), mcid);
 if (nodes!=null) xmlAddNodes(nodes);
 }
 
-private Node[] getNodesByMCID (PdfDictionary page, PdfNumber mcid) throws Exception {
+private Node[] getNodesByMCID (PdfDictionary page, PdfNumber mcid) throws IOException {
 Map<Integer,Node[]> mcidMap = pages.get(page);
 if (mcidMap==null) {
 textExtractor.process(page);
@@ -140,44 +142,56 @@ return sb.toString();
 else return null;
 }
 
-private void xmlBeginElement (String name) throws Exception {
+private void xmlBeginElement (String name) throws IOException {
 Element el = doc.createElement(name);
-if (curEl==null) doc.appendChild(el);
-else curEl.appendChild(el);
+if (curEl!=null) curEl.appendChild(el);
+else if (doc.getDocumentElement()==null) doc.appendChild(el);
+else {
+Element el0 = doc.getDocumentElement();
+doc.removeChild(el0);
+Element root = doc.createElement("document");
+root.appendChild(el0);
+root.appendChild(el);
+doc.appendChild(root);
+}
 curEl = el;
 }
 
-private void xmlEndElement (String name) throws Exception {
+private void xmlEndElement (String name) throws IOException {
 Node node = curEl.getParentNode();
 curEl = node instanceof Element ? (Element)node : null;
 }
 
-private void xmlAddAttr (String name, String value) throws Exception {
+private void xmlAddAttr (String name, String value) throws IOException {
 curEl.setAttribute(name, value);
 }
 
-private void xmlAddAttr (String name, PdfObject value) throws Exception {
+private void xmlAddAttr (String name, PdfObject value) throws IOException {
 xmlAddAttr(name, xmlToString(value));
 }
 
-private void xmlAddText (String str) throws Exception {
+private void xmlAddText (String str) throws IOException {
 curEl.appendChild(doc.createTextNode(str));
 }
 
-private void xmlAddNodes (Node... nodes) throws Exception {
+private void xmlAddNodes (Node... nodes) throws IOException {
 for (Node n: nodes) curEl.appendChild(n);
 }
 
 public Document getDocument () { return doc; }
 public Map<PdfName,PdfName> getRoleMap () { return roleMap; }
 public PdfDictionary getCatalog () { return pdf.getCatalog(); }
+public int getPageCount () { return pdf.getNumberOfPages(); }
 public PDFTextExtractor getTextExtractor () { return textExtractor; }
 
-public void readPDF (String filename) throws Exception {
+public void readPDF (String filename) throws IOException {
+try {
 doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+} catch (ParserConfigurationException e) { throw new IOException("Please install and configure a working DOM parser", e); }
 textExtractor.setDocument(doc);
 textExtractor.setWatchStyles(false);
 pdf = new PdfReader(filename);
+if (!pdf.isTagged()) throw new UnsupportedPdfException("Only tagged PDF files are supported");
 PdfDictionary catalog = pdf.getCatalog();
 PdfDictionary root = catalog.getAsDict(PdfName.STRUCTTREEROOT);
 PdfDictionary roleMap = root.getAsDict(PdfName.ROLEMAP);
