@@ -42,7 +42,11 @@ You must install the JRE 7 or JDK 7; it may work with Java 6, but it hasn't been
 The java program which analyzes PDF files is using a PDF library called iText. You can download it from http://www.itextpdf.com
 You need at least version 5.5; newer versions should work as well.
 
-Put all downloaded jar files in lib/ext/ or jre/lib/ext directory of your Java installation.
+Some PDF files are encrypted and/or signed and iText will try to decrypt/verifiy them if it is allowed to. To be able to decrypt and verify signatures, you must download some parts of the bouncycastle library.
+Go to http://www.bouncycastle.org/latest_releases.html
+Here, download bcmail-jdk15on-150.jar, bcpkix-jdk15on-150.jar, bcprov-ext-jdk15on-150.jar and bcprov-jdk15on-150.jar.
+
+Put all downloaded jar files from iText and bouncycastle in lib/ext/ or jre/lib/ext directory of your Java installation. This directory is sometimes called extensions directory, or automagic directory.
 Alternatively, you can add them to your classpath or specify them explicitely on program's command line (see below).
 
 == Configure the plugin
@@ -65,19 +69,29 @@ All that must be configured in php.ini. In many linux and UNIX_like distribution
 
 === Configure the plugin itself 
 
-Open local/accesssibilitycheck/checker/main.php in your favorite text editor, and edit the two define that are on top of the file :
-``
+Open local/accesssibilitycheck/checker/main.php in your favorite text editor, and edit the two define that are on top of the file :$
+
+```
 define('PDFINFO_PATH', 'C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\pdfinfo.exe');
 define('TAGGED_ANALYZER_PATH', 'java -jar C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\analyzer.jar');
-`` 
+``` 
 
 The first one is the path to pdfinfo. If pdfinfo is in system's path, you can juste write pdfinfo, but if not, you must put there the full path.
 The second one is the full command line to run the alalyzing program in java. Normally, your java interpreter should be in system's path, so you can just write java; otherwise you must write the full path to it. Then there is the option -jar, which specifiy to java that it has to run a program contained in a jar file; this is normally to be left as is. Finally, you must specify the full path to the jar file to be executed, i.e. where you put analyzer.jar.
+If you didn't put iText jar files in the magic directory jre/lib/ext/ or lib/ext/, then you will have to specifiy them on the classpath explicitely.
 
 Unless you want to developp further the plugin, you shouldn't have to modify anothing under these two defines. There is currently nothing else to configure or customize.
 
-== Testing that it works
+== Testing
 
-=== Quick test
+=== Quick test, on the command line
+
+To verify that the java analyzing program works well, you can try to run it. Try it with one of the example PDF files provided, for example.
+
+```
+java -jar analyzer.jar test-perfect.pdf
+```
+
+If you get a message telling exception, then something went wrong. If you are returned to the print without any message, then you are ready for the second test.
 
 === Full test
