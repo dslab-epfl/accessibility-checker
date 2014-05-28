@@ -5,14 +5,15 @@ define('TAGGED_ANALYZER_PATH', 'java -jar C:\\wamp\\www\\moodle\\local\\accessib
 require_once(dirname(__FILE__).'/msgs.php');
 
 function pdfinfo ($file) {
-exec(PDFINFO_PATH .' '. escapeshellarg($file), $lines, $retval);
+exec(PDFINFO_PATH .' '. escapeshellarg($file), $lines, $exitCode);
 $o = new stdClass();
 foreach($lines as $l) {
-list($key, $val) = explode(':', $l);
+@list($key, $val) = explode(':', $l);
 $key=trim($key);
 $val = trim($val);
-$o->$key = $val;
+if ($key&&$val) $o->$key = $val;
 }
+$o->exitCode = $exitCode;
 return $o;
 }
 
@@ -50,44 +51,72 @@ return 'unknown';
 }
 
 function taggedAnalysis ($file) {
-exec(TAGGED_ANALYZER_PATH .' '. escapeshellarg($file), $lines, $retval);
+exec(TAGGED_ANALYZER_PATH .' '. escapeshellarg($file), $lines, $exitCode);
 $o = new stdClass();
+$o->count = 0;
+$o->detail = '';
 foreach($lines as $l) {
-if ($l&&substr($l,0,2)=='- ') continue; // jump over detailled messages
-list($key, $val) = explode(':', $l);
+if ($l&&substr($l,0,2)=='- ') {
+$o->count++;
+$o->detail .= "$l\r\n";
+continue; 
+}
+@list($key, $val) = explode(':', $l);
 $key=trim($key);
 $val = trim($val);
+if (!$key||!$val) continue;
+$o->count++;
 $o->$key = $val;
 }
+$o->exitCode = $exitCode;
 return $o;
 }
 
 function CheckPDFForAccessibility ($o) {
+$msg = '';
 $info = pdfinfo($o->file);
+if ($info->exitCode!=0) {
+$pdfinfopath = PDFINFO_PATH;
+$o->msg = <<<END
+ERROR: accessibility checking failed, pdfinfo couldn't be run
+Phpinfo path: $pdfinfopath
+Exit code: {$info->exitCode}
+END;
+return $o;
+}
 $gen = determineGenerator($info);
 if ($info->Tagged==='yes') {
 global $AXMSGS;
 $re = taggedAnalysis($o->file);
-if (count($re)>0) {
+if ($re->exitCode!=0) {
+$path = TAGGED_ANALYZER_PATH;
+$o->msg = <<<END
+ERROR: accessibility checking failed, java accessibility checker couldn't be run
+Analyzer command line: $path
+Exit code: {$re->exitCode}
+END;
+return $o;
+}
+if ($re->count>0) {
 $msg = $AXMSGS['GTaggedButErrors'];
 foreach ($re as $key=>$num) {
 if (isset($AXMSGS["t$key"])) $msg .= "\r\n\r\n" .str_replace('$n', $num, $AXMSGS["t$key"]);
 if (isset($AXMSGS["t{$key}_{$gen}"])) $msg .= "\r\n\r\n" .$AXMSGS["t{$key}_{$gen}"];
 }
-$msg .= "\r\n\r\n" .$AXMSGS['gAxTipps'];
-$o->msg = $msg;
+//$msg .= "\r\n\r\n" .$AXMSGS['gAxTipps'];
+if (isset($AXMSGS["axGnr_$gen"])) $msg.="\r\n\r\n".$AXMSGS["axGnr_$gen"];
+$msg .= "\r\n\r\nDetailled messages :\r\n" .$re->detail;
+//$o->msg = $msg;
 }}
 else {
 global $AXMSGS;
 $msg = $AXMSGS['gNotTagged'];
 if ($gen=='word' || $gen=='powerpoint') $msg.="\r\n".$AXMSGS['officeSave'];
 else if ($gen=='writer') $msg.="\r\n".$AXMSGS['ooSave'];
-$msg.="\r\n".$AXMSGS['gAxTipps'];
-if ($gen=='word') $msg.="\r\n".$AXMSGS['axWord'];
-else if ($gen=='powerpoint') $msg.="\r\n".$AXMSGS['axPpt'];
-else if ($gen=='writer') $msg.="\r\n".$AXMSGS['axOO'];
-else if ($gen=='latex') $msg.="\r\n".$AXMSGS['axLatex'];
+$msg.="\r\n".$AXMSGS['gAxTipps']."\r\n";
+if (isset($AXMSGS["axGnr_$gen"])) $msg.="\r\n".$AXMSGS["axGnr_$gen"];
 }
-$o->msg = $msg;
+if (isset($msg) && $msg) $o->msg = utf8_encode(nl2br(htmlspecialchars($msg, ENT_IGNORE, 'ISO-8859-1')));
+@file_put_contents("C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\msg.log", $o->msg);
 }
 ?>

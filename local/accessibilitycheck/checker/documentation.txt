@@ -1,75 +1,99 @@
-= Moodle accessibility checker plugin
+# Moodle accessibility checker plugin
 
-== Introduction
+## Introduction
 This moodle plugin encourages teachers to make accessible course material by checking, each time they upload a PDF file, if it is accessible.
+
 If it is not, or only partially because potential problems have been detected, an information message is displayed telling that their file isn't accessible or which problems there might be, and what they should do to improve it.
 
-Rather than being generic and technical, as most other accessibility checkers tools usually do, advices given by this plugin try to be as simple as possible and contextualized depending on the word processing software used to produce the PDF file, so that professors that aren't used to computers and especially not with accessibiliy-related issues can understand easily what issues are about and how they are supposed to fix them in their favorite programs.
+Rather than being generic and technical, as most other accessibility checkers tools usually do, advices given by this plugin try to be as simple as possible and contextualized depending on the word processing software used to produce the PDF file, 
+so that professors that aren't used to computers and especially not with accessibiliy-related issues can understand easily what issues are about and how they are supposed to fix them in their favorite programs.
+
 It is no doubt that, if problems and the way to solve them are explained simply, professors are likely to effectively fix them if it takes them only reasonnable time. People are often ready to help in accessibility, if they are shown what to do.
 Deeply technical-oriented checkers are unfortunately of no help with people that may not be familiar with accessibility, word processing advanced concepts, or computers in general. It has been observed that, most often, documents on the web aren't accessible because of ignorance, not because of unwillingness or lake of time.
 
-== Installing the plugin
+## Installing the plugin
 
 This accessibility checker plugin is composed of multiple parts, so its installation is unfortunately not as easy as one would like.
 
-=== Patching moodle
+### Patching moodle
 First step is installing moodle, or patch it if it is already done.
 Patching is required because some internal features don't exist in the base version. 
 More specifically, the patch adds the possibility for a plugin to be notified when a teacher uploads a file. Being notified when a file is uploaded exists since a long time for students, to allow auto-grading, anti-cheat checking and such likes, but what instructors upload at all has never been verified in any way before, so this function needs to be added.
 
-You can download the entire moodle distribution already patched, or only the patch alone.
-Version 2.6.2 of moodle has been used as a base. If you are already using a different version, you might have to apply the patch more or less manually.
+You can download the entire moodle distribution already patched, only the patch alone, or only files that have been patched in acse automatic patching doesn't work.
+Version 2.6.2 of moodle has been used as a base. If you are already using a different version, you might have to apply the patch mor or less manually.
 
-=== Installing the plugin
+The patch has been created with `git diff`. In the best case, it means that it should be patched with `git apply`.
+If you left the file name of your download unchanged, the exact command would be `git apply moodle.patch`.
+
+- [Entire moodle distribution including patch and plugin](http://vrac.quentinc.net/epfl/sp2014/moodle-full.zip)
+- [Moodle patch file](http://vrac.quentinc.net/epfl/sp2014/moodle.patch)
+- [Archive containing only files that have been modified](http://vrac.quentinc.net/epfl/sp2014/moodle-partial.zip)
+
+### Installing the plugin
+
 Once moodle is running and patched, you need to install the plugin itself.
 
-Download the plugin itself. All files must go under local/accessibilitycheck/
+Download the plugin itself. All files must go under `local/accessibilitycheck/`.
 
-Once all files have been copied, connect to moodle administration at http://..../admin. It should automatically notify you that new plugins are going to be installed. Follow instructions given by moodle.
+Once all files have been copied, connect to moodle administration at `http://..../admin`. It should automatically notify you that new plugins are going to be installed. Follow instructions given by moodle.
 
-=== Install pdfinfo
-The plugin uses an utility called pdfinfo to collect meta-information on uploaded PDF files. 
-If you are on Linux, your standard packet manager should let you install it easily. On Debian, install package poppler-utils. In other distributions, it might be part of the XPDF library.
+- [Moodle accessibility checker plugin](http://vrac.quentinc.net/epfl/sp2014/moodle-plugin.zip)
+
+### Install pdfinfo
+
+The plugin uses an utility called **pdfinfo** to collect meta-information on uploaded PDF files. 
+If you are on linux, your standard packet manager should let you install it easily. Sometimes, it is part of the **XPDF library**.
  A windows version exists as a part of GNUWin32 project, or you can download it directly here.
 
-=== Install Java 7
+- [Windows version of pdfinfo](http://vrac.quentinc.net/epfl/sp2014/pdfinfo.exe)
+
+### Install Java 7
+
 The plugin also uses a Java program to analyze PDF files. Java must be installed if it isn't already.
-You will find Java Runtime Environment on Oracle's website.
+You will find the Java Runtime Environment on <http://www.java.com>.
 You must install the JRE 7 or JDK 7; it may work with Java 6, but it hasn't been tested.
 
-=== Install iText library for Java
+### Install iText library for Java
 
-The java program which analyzes PDF files is using a PDF library called iText. You can download it from http://www.itextpdf.com
+The java program which analyzes PDF files is using a PDF library called iText. You can download it from <http://www.itextpdf.com>.
 You need at least version 5.5; newer versions should work as well.
 
 Some PDF files are encrypted and/or signed and iText will try to decrypt/verifiy them if it is allowed to. To be able to decrypt and verify signatures, you must download some parts of the bouncycastle library.
-Go to http://www.bouncycastle.org/latest_releases.html
-Here, download bcmail-jdk15on-150.jar, bcpkix-jdk15on-150.jar, bcprov-ext-jdk15on-150.jar and bcprov-jdk15on-150.jar.
+Go to <http://www.bouncycastle.org/latest_releases.html>
+Here, download `bcmail-jdk15on-150.jar, bcpkix-jdk15on-150.jar, bcprov-ext-jdk15on-150.jar` and `bcprov-jdk15on-150.jar`.
 
-Put all downloaded jar files from iText and bouncycastle in lib/ext/ or jre/lib/ext directory of your Java installation. This directory is sometimes called extensions directory, or automagic directory.
+To simplify your life, all needed jar files mentionned above can be downloaded in a single zip file below.
+
+- [Zip archive of all needed jar files](http://vrac.quentinc.net/epfl/sp2014/jars.zip)
+
+Put all downloaded jar files from iText and bouncycastle in `lib/ext/` or `jre/lib/ext` directory of your Java installation. This directory is sometimes called extensions directory, or automagic directory.
 Alternatively, you can add them to your classpath or specify them explicitely on program's command line (see below).
 
-== Configure the plugin
+## Configure the plugin
 
 Before you can effectively use the plugin, there are small configurations to do. You must specify where to find pdfinfo, and how to launch the analyzer program, as well as, of course, allow php to run external programs.
 
-=== Configure php
+### Configure php
 
-Moodle, which is in php, will use a binary program, pdfinfo, as well as another program which is in java. In order to have all that working, php must be allowed to use the function called exec.
+Moodle, which is in php, will use a binary program, pdfinfo, as well as another program which is in java. In order to have all that working, php must be allowed to use the function called `exec`.
 
-Many web hosts explicitely disallow php to use functions like exec or system, which allow it to run external programs. They usually do so for security reasons.
+Many web hosts explicitely disallow php to use functions like `exec` or `system`, which allow it to run external programs. They usually do so for security reasons.
 Unfortunately, since the plugin uses programs that haven't been programmed in php and that wouldn't have been doable easily in php, it wont work if these functions are disallowed.
 
 To ensure they aren't disallowed, check that :
-* SAFE_MODE is disabled
-* The DISABLE_FUNCTIONS entry doesn't explicitely contain exec, system, shell_exec, escapeshell, escapeshellarg
-* pdfinfo and the jar file to execute have correct rights, and aren't forbidden by OPEN_BASEDIR
 
-All that must be configured in php.ini. In many linux and UNIX_like distributions, you will find it under /etc/php5/apache2/php.ini.
+- *SAFE_MODE* is disabled
+- The *DISABLE_FUNCTIONS* entry doesn't explicitely contain one or more of `exec, system, shell_exec, escapeshell, escapeshellarg`
+* pdfinfo and the jar file to execute have correct rights, and aren't forbidden by the *OPEN_BASEDIR* directive
 
-=== Configure the plugin itself 
+All that must be configured in `php.ini`. In many linux and UNIX_like distributions, you will find it under `/etc/php5/apache2/php.ini`.
 
-Open local/accesssibilitycheck/checker/main.php in your favorite text editor, and edit the two define that are on top of the file :$
+A very simple way to check your php configuration and locate the `php.ini` is to use the `phpinfo`function. In case of doubt, upload a php file containing only `<?php phpinfo(); ?>` to your web server and navigate to it in your browser; you should see a very detailled page describing all php configuration.
+
+### Configure the plugin itself 
+
+Open `local/accesssibilitycheck/checker/main.php` in your favorite text editor, and edit the two define that are on top of the file :
 
 ```
 define('PDFINFO_PATH', 'C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\pdfinfo.exe');
@@ -77,25 +101,45 @@ define('TAGGED_ANALYZER_PATH', 'java -jar C:\\wamp\\www\\moodle\\local\\accessib
 ``` 
 
 The first one is the path to pdfinfo. If pdfinfo is in system's path, you can juste write pdfinfo, but if not, you must put there the full path.
-The second one is the full command line to run the analyzing program in java. Normally, your java interpreter should be in system's path, so you can just write java; otherwise you must write the full path to it. Then there is the option -jar, which specifiy to java that it has to run a program contained in a jar file; this is normally to be left as is. Finally, you must specify the full path to the jar file to be executed, i.e. where you put analyzer.jar.
-If you didn't put iText jar files in the magic directory jre/lib/ext/ or lib/ext/, then you will have to specify the classpath manually, as follows:
+
+The second one is the full command line to run the alalyzing program in java. Normally, your java interpreter should be in system's path, so you can just write java; otherwise you must write the full path to it. Then there is the option `-jar`, which specifiy to java that it has to run a program contained in a jar file; this is normally to be left as is. 
+Finally, you must specify the full path to the jar file to be executed, i.e. where you put `analyzer.jar`. 
+If you didn't put iText and bouncycastle jar files in the magic directory `jre/lib/ext/` or `lib/ext/`, then you will have to specifiy them on the *classpath* explicitely, for example as follows:
 
 ```
 define('TAGGED_ANALYZER_PATH', 'java -cp /path/to/analyzer.jar:/path/to/itextpdf-5.5.0.jar PDFXMLDocumentAnalyzer');
-``` 
-
-Unless you want to develop the plugin further, you shouldn't have to modify anything under these two defines. There is currently nothing else to configure or customize.
-
-== Testing
-
-=== Quick test, on the command line
-
-To verify that the java analyzing program works well, you can try to run it. Try it with one of the example PDF files provided, for example.
-
 ```
-java -jar analyzer.jar test-perfect.pdf
-```
+
+Unless you want to developp further the plugin, you shouldn't have to modify anothing under these two defines. There is currently nothing else to configure or customize.
+
+It doesn't make any importance if the plugin is already installed in moodle or not while modifying the file.
+
+## Testing
+
+### Quick test, on the command line
+
+To verify that the java analyzing program works well, you can try to run it. Try it with the PDF file `test-commandline.pdf` provided, for example.
+
+`java -jar analyzer.jar test-commandline.pdf`
+
+- [Download example PDF file: test-commandline.pdf](http://vrac.quentinc.net/epfl/sp2014/test-commandline.pdf)
 
 If you get a message telling exception, then something went wrong. If you are returned to the print without any message, then you are ready for the second test.
 
-=== Full test
+### Full test
+
+It's now time to test the plugin in action inside moodle !
+
+When a perfect PDF is uploaded, that is technically accessible and without errors, no message is displayed at all. Therefore, you should try the plugin with a volontarily invalid file to see something.
+Don't retry the same file as above (`test-commandline.pdf`), it doesn't have any error. Try with another PDF file, for example the `test-invalid.pdf` given below.
+
+- [Download example PDF file: test-invalid.pdf](http://vrac.quentinc.net/epfl/sp2014/test-invalid.pdf)
+
+Open moodle in your browser and login with an account that has the right to upload files inside courses: an admin account, or a teacher account. You might create a dummy course for your tests.
+
+1. Open the course you want to upload files in
+2. Turn edition mode on
+3. Click to add a resource or an activity somewhere
+4. When it's time to effectively upload files, send `test-invalid.pdf`or another PDF file that isn't accessible (it has 99% chances to not be accessible)
+5. After the file is uploaded, you should see a big dialog box telling that your PDF isn't accessible, what were problems found, and hints on how to solve them.
+6. You juste have to click OK to close the dialog box and continue working normally

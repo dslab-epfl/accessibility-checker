@@ -126,6 +126,7 @@ if (n<0) n = str.indexOf('\t', 60);
 if (n<0) n = str.indexOf('\u00A0', 60);
 if (n>0) str = str.substring(0,n) + "...";
 }
+str = str.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').replaceAll(" +", " ");
 return str;
 }
 
