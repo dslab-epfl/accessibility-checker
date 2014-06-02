@@ -6,9 +6,9 @@ Then, in case of potential problems, a report is displayed in the browser
 
 function course_file_uploaded ($cc) {
 if (!isPDFFile($cc->file)) return true;
-$cc->msg = 'Checking your PDF';
 global $CFG;
 require_once($CFG->dirroot . '/local/accessibilitycheck/checker/main.php');
+$cc->msg = "Your PDF has been checked for accessibility, and it doesn't seem to have any issue. Congratulations !";
 CheckPDFForAccessibility($cc);
 return true;
 }

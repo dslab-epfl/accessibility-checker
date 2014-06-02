@@ -741,6 +741,7 @@ M.course_dndupload = {
                     var result = JSON.parse(xhr.responseText);
                     if (result) {
                         if (result.error == 0) {
+if (result.msg) alert(result.msg.toString().split('<br />').join('\r\n').replace( /<[^<>]+>/g, ''));
                             // All OK - replace the dummy element.
                             resel.li.outerHTML = result.fullcontent;
                             if (self.Y.UA.gecko > 0) {
@@ -966,6 +967,7 @@ M.course_dndupload = {
                     var result = JSON.parse(xhr.responseText);
                     if (result) {
                         if (result.error == 0) {
+if (result.msg) alert(result.msg.toString().split('<br />').join('\r\n').replace( /<[^<>]+>/g, ''));
                             // All OK - replace the dummy element.
                             resel.li.outerHTML = result.fullcontent;
                             if (self.Y.UA.gecko > 0) {

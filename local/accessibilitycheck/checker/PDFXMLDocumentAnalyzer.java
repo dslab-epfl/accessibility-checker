@@ -27,6 +27,7 @@ private Map<String,Integer> msgs = new LinkedHashMap<String,Integer>();
 private PrintStream out = System.out;
 private int nPages;
 
+// Loading all tagging rules
 static {
 String[] inlineTags = { "span", "quote", "code", "link", "note", "reference", "bibentry", "annot", "figure", "formula", "ruby", "warichu"};
 String[] baseBlockTags = {"p", "h", "h1", "h2", "h3", "h4", "h5", "h6", "caption"};
@@ -60,6 +61,7 @@ rules.put("ruby", new Rule(array("rb", "rt", "rp"), false));
 rules.put("warichu", new Rule(array("wt", "wp"), false));
 }
 
+/** Read a PDF file and analyze it */
 public void read (String filename) throws IOException {
 msgs.clear(); // Clear error messages
 TaggedPDFToDOMDocument cvt = new TaggedPDFToDOMDocument();
@@ -77,6 +79,7 @@ analyzeRoleMap();
 analyzeMisc();
 }
 
+/** Utility method to merge two arrays */
 @SuppressWarnings("unchecked") private static String[] merge (String[] a, String... b) { return merge2(a,b); }
 @SuppressWarnings("unchecked") private static String[] merge2 (String[]... arrays) {
 int i=0, len = 0;
@@ -86,8 +89,10 @@ for (String[] e1: arrays) for(String e: e1) ar[i++]=e;
 return ar;
 }
 
+/** Utility method */
 @SuppressWarnings("unchecked") private static <E> E[] array (E... x) { return x; }
 
+/** Utility method to have more friendly syntax to loop over DOM node lists */
 @SuppressWarnings("unchecked") private <E> List<E> toList (final NodeList list) {
 return new AbstractList<E>(){
 public E get (int i) { return (E) list.item(i); }
@@ -95,26 +100,32 @@ public int size () { return list.getLength(); }
 };
 }
 
+/** Utility method to have more friendly syntax to loop over DOM node lists */
 private List<Element> getElementsByTagName (String tagName) {
 return this.<Element>toList(doc.getElementsByTagName(tagName));
 }
 
+/** Utility method to have more friendly syntax to loop over DOM node lists */
 private List<Element> getElementsByTagName (Element el, String tagName) {
 return this.<Element>toList(el.getElementsByTagName(tagName));
 }
 
+/** Utility method to have more friendly syntax to loop over DOM node lists */
 private List<Node> childNodes (Node node) {
 return this.<Node>toList(node.getChildNodes());
 }
 
+/** Check that the element is of a type (= tag name) */
 private boolean isElement (Node node, String tagName) {
 return node instanceof Element && ((Element)node).getTagName().equals(tagName);
 }
 
+/** Check that a node is of one of the types given (= tag names) */
 private boolean isOneOf (Node node, String... tagNames) {
 return node instanceof Element && indexOf( ((Element)node).getTagName(), tagNames)>=0;
 }
 
+/** Return the beginning of the text contained in a given element, or as most as possible near it */
 private String getNearText (Element e) {
 if (e==null) return "...";
 String str = e.getTextContent();
@@ -130,10 +141,11 @@ str = str.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').replaceAll(" 
 return str;
 }
 
+/** Output an analyzer message */
 private void message (String key, String detail) { message(key,detail,null); }
 private void message (String key, String detail, Element el) {
 if (out!=null) {
-if (el!=null) out.println("- " + detail + ": near " + getNearText(el));
+if (el!=null) out.println("- " + detail + ": near \"" + getNearText(el) + "\"");
 else out.println("- " + detail);
 }
 Integer x = msgs.get(key);
@@ -146,6 +158,7 @@ public void setOut (PrintStream o) { out=o; }
 public Document getDocument () { return doc; }
 public Map<String,Integer> getResult () { return msgs; }
 
+/** Utility method */
 private <T> int indexOf (T item, T[] array) {
 for (int i=0, n=array.length; i<n; i++) {
 if (
@@ -156,9 +169,11 @@ if (
 return -1;
 }
 
+/** Called each time a BDC or BMC command is encountered while reading the PDF file */
 public void encounterBDC (List<PdfObject> l) {
 if (l.size()<1 || !(l.get(0) instanceof PdfName)) return;
 PdfName type = (PdfName)l.get(0);
+// Checking the mixing of artifacts and tagged contents
 boolean isArtifact = type.equals(PdfName.ARTIFACT),
 isMarkedContent = l.size()>=2 && (l.get(1) instanceof PdfDictionary) && ((PdfDictionary)l.get(1)).get(PdfName.MCID)!=null,
 containsArtifacts = markedContentElements.contains(PdfName.ARTIFACT), 
@@ -170,6 +185,7 @@ if (isArtifact && containsMarkedContents) message( "MixedArtifactAndTaggedConten
 if (isMarkedContent && containsArtifacts) message( "MixedArtifactAndTaggedContents", "MH01-004: tagged contents present in artifacts");
 }
 
+/** Called each time a EMC command is encountered while reading the PDF file */
 public void encounterEMC (List<PdfObject> l) {
 if (markedContentElements.size()<=0) message("BDCEMCMissmatch", "ISO-32000-2008: missmatched BDC/EMC tags");
 else markedContentElements.remove(markedContentElements.size() -1);
@@ -177,6 +193,7 @@ else markedContentElements.remove(markedContentElements.size() -1);
 
 /** Validate some other PDF aspects, outside of the XML document part */
 private void analyzeMisc () {
+// Nothing else for the moment
 }
 
 /** Check the validity of the role map */
@@ -210,7 +227,7 @@ if (n instanceof Element) {
 if (rule!=null && rule.allowedChilds!=null && !isOneOf(n, rule.allowedChilds)) {
 message("InvalidTagging", "ISO-32000-2008: " + ((Element)n).getTagName() + " within " + el.getTagName() + " not allowed", (Element)n); // the element contains a child element of a type that isn't allowed
 }
-validate((Element)n);
+validate((Element)n); // validate child element
 }
 else if ((n instanceof Text) && rule!=null && !rule.allowText) {
 message("InvalidTagging", "ISO-32000-2008: text not allowed within " + el.getTagName(), el); // The element contains text nodes when it isn't allowed
@@ -250,6 +267,7 @@ else if (tn.equals("thead")) {
 if (nTfoot>0 || nTbody>0) message("InvalidTagging", "MH09-004: thead must appear before tbody and tfoot", e); // <thead> must appear before <tbody> and <tfoot>
 nThead++;
 }
+// WE are not sure if tfoot can or must appear before tbody, so we do nothing special for them
 else if (tn.equals("tbody")) nTbody++;
 else if (tn.equals("tfoot")) nTfoot++;
 }
@@ -261,7 +279,7 @@ int nCellsPerRow=0;
 for (Element tr: getElementsByTagName(table, "tr")) {
 int nTd = 0, nTh=0;
 for (Element th: getElementsByTagName(tr, "th")) {
-if (!th.hasAttribute("id") && !th.hasAttribute("scope")) message("tableThNoScope", "MH15-003: th must have wheither a scope or an id attribute", th);
+if (!th.hasAttribute("id") && !th.hasAttribute("scope")) message("tableThNoScope", "MH15-003: th must have wheither a scope or an id attribute", th); // In order to fullfill matterhorn protocol, tables must contain header cells wheither with cope attributes (simple tables) or ID/headers (complex tables); so a th must necessarily have one of scope or ID attributes.
 if (!th.hasAttribute("scope")) hasNoAttrScope=true;
 nTh++;
 }
@@ -270,8 +288,8 @@ if (td.hasAttribute("headers")) hasAttrHeaders=true;
 nTd++;
 }
 if (nTh>0) hasTh=true;
-if (nCellsPerRow<=0) nCellsPerRow = nTd+nTh;
-if (nTd+nTh!=nCellsPerRow && !hasAttrHeaders) message("TableIrregular", "Warning: Irregular tables that don't have a constant number of columns in each row aren't advisable and should be avoided", tr); // Irregular tables, i.e. not having always the same number of columns in each row aren't advisable
+if (nCellsPerRow<=0) nCellsPerRow = nTd+nTh; // first row, silently set the number of columns found
+if (nTd+nTh!=nCellsPerRow && !hasAttrHeaders) message("TableIrregular", "Warning: Irregular tables that don't have a constant number of columns in each row aren't advisable and should be avoided", tr); // Irregular tables, i.e. not having always the same number of columns in each row, are necessarily considered to be complex table; so they must have ID/headers to be completely valid. However it is often better to make them regular so we will advise in this sens instead of reporting ID/headers missing.
 nCellsPerRow = nTd+nTh;
 }
 if (!hasTh) message("TableNoTh", "Warning: data tables should have header cells", table); // Data tables must have header cells; if they don't have, it probably means that they are presentational, in which case they shouldn't ahve been tagged as table at the first place. (MH15-004)

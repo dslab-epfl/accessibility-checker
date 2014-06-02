@@ -4,9 +4,11 @@ define('TAGGED_ANALYZER_PATH', 'java -jar C:\\wamp\\www\\moodle\\local\\accessib
 
 require_once(dirname(__FILE__).'/msgs.php');
 
+/** Execute pdfinfo and return an object with information retrieved */
 function pdfinfo ($file) {
 exec(PDFINFO_PATH .' '. escapeshellarg($file), $lines, $exitCode);
 $o = new stdClass();
+// Pdfinfo returns information in the form of lines "key: value"; let's create an object with properties corresponding to the different keys
 foreach($lines as $l) {
 @list($key, $val) = explode(':', $l);
 $key=trim($key);
@@ -17,24 +19,25 @@ $o->exitCode = $exitCode;
 return $o;
 }
 
+/** Try to determine the program which generated the PDF file, based on informations returned by pdfinfo */
 function determineGenerator ($info) {
 if (isset($info->Creator)) {
 if (preg_match('/TeX/', $info->Creator)) return 'latex';
 else if (preg_match('/dvips/i', $info->Creator)) return 'latex';
 else if (preg_match('/Word|PowerPoint|Excel|Writer|Impress|Calc|Keynote/i', $info->Creator, $m)) return strtolower($m[0]);
-else if (preg_match('/PScript5\.dll/i', $info->Creator)) {
+else if (preg_match('/PScript5\.dll/i', $info->Creator)) { // PScript5.dll is a generic PostScript printer driver for windows; by chance, it often sets the title incorrectly to the source file name, thus we might determine the generator based on the file extension
 if (preg_match('/\.(doc|ppt|xls)x?$/i', $info->Title, $m)) {
 $str = strtolower($m[1]);
 if ($str=='doc') return 'word';
 else if ($str=='ppt') return 'powerpoint';
 else if ($str=='xls') return 'excel';
 }
-else if (preg_match('/Word|PowerPoint|Excel/i', $info->Title, $m)) return strtolower($m[0]);
+else if (preg_match('/Word|PowerPoint|Excel/i', $info->Title, $m)) return strtolower($m[0]); // Sometimes the generator is put on the title field
 }
 // Other creator-based criterias
 }
 else if (isset($info->Title)) {
-if (preg_match('/\.(docx?|pptx?|xlsx?|tex)$/i', $info->Title, $m)) {
+if (preg_match('/\.(docx?|pptx?|xlsx?|tex)$/i', $info->Title, $m)) { // Sometimes the file name is put as title of the PDF; we might determine the generator from file extension
 $str = strtolower($m[1]);
 if ($str=='doc' || $str=='docx') return 'word';
 else if ($str=='ppt' || $str=='pptx') return 'powerpoint';
@@ -50,6 +53,7 @@ if (preg_match('/OpenOffice\.org/i', $info->Producer)) return 'writer';
 return 'unknown';
 }
 
+/** Run the java analyzer program and return information retrived in an object */
 function taggedAnalysis ($file) {
 exec(TAGGED_ANALYZER_PATH .' '. escapeshellarg($file), $lines, $exitCode);
 $o = new stdClass();
@@ -72,6 +76,7 @@ $o->exitCode = $exitCode;
 return $o;
 }
 
+/** Check a PDF file for accessibility */
 function CheckPDFForAccessibility ($o) {
 $msg = '';
 $info = pdfinfo($o->file);
@@ -117,6 +122,6 @@ $msg.="\r\n".$AXMSGS['gAxTipps']."\r\n";
 if (isset($AXMSGS["axGnr_$gen"])) $msg.="\r\n".$AXMSGS["axGnr_$gen"];
 }
 if (isset($msg) && $msg) $o->msg = utf8_encode(nl2br(htmlspecialchars($msg, ENT_IGNORE, 'ISO-8859-1')));
-@file_put_contents("C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\msg.log", $o->msg);
+file_put_contents("C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\msg.log", print_r($o,true));
 }
 ?>

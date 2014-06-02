@@ -4,8 +4,6 @@ $GLOBALS['AXMSGS'] = array(
 Your PDF document has been checked for accessibility, and has been determined as not being accessible at all.
 
 Your PDF isn't tagged.
-To understand what is PDF tags and why they are important, read
-...
 
 To produce a tagged PDF, make sure that the relevant export options are set correctly.
 
@@ -85,7 +83,7 @@ END
 Level 1: missing or unappropriate alternate text for figures and/or formulas
 Alternate text aka simply alt must be present on all figures and formulas. They must briefly describe what they are attached to, and are important for people who can't see them visually.
 * For formulas, alt text should contain a textual representation of the math expression, i.e. corresponding LaTeX code, or like such a formula would be typed in a programming language
-* For imagee that are also links or trigger something when clicked, alt text shouldn't describe the image itself but its function, i.e. what a click does, or where the link leads to; e.g. 
+* For imagee that are also links or trigger something when clicked, alt text shouldn't describe the image itself but its function, i.e. what a click does, or where the link leads to
 * For complex figures like schemas, diagrams, graphics, etc. a full textual description or tables of data used should ideally be present or be referenced at some other place in the document in case the alt is going to be long
 * For other images and illustrations, use common sens to make a description that is as short, or as long as it is required to reasonnably understand your document. You can put an empty alt text for images that are purely illustrative (in that case, make the difference between empty but present alt text, allowed and sometimes useful, and total absence of alt text, just bad).
 
@@ -123,7 +121,7 @@ For more information on how to use styles to add true headings in your word docu
 Note that in word 2007 and above, you can use Alt+Shift+Left/Right to quickly change the heading level of a selected portion of text, as well as Ctrl+Alt+1 to 3 to directly set the style to heading level 1 to 3.
 END
 ,'tNoHeadings_powerpoint'=><<<'END'
-For more information on using proper slide layout so that headings can be identified, see http://webaim.org/techniques/powerpoint/#layouts
+For more information on using proper powerpoint slide layout so that headings can be identified, see http://webaim.org/techniques/powerpoint/#layouts
 END
 ,'tNoHeadings_writer'=><<<'END'
 For more information on how to use styles to add true headings in your open office writer documents, see http://webaim.org/techniques/ooo/#headings
