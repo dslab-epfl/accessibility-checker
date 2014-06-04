@@ -1,6 +1,7 @@
 # Moodle accessibility checker plugin
 
 ## Introduction
+
 This moodle plugin encourages teachers to make accessible course material by checking, each time they upload a PDF file, if it is accessible.
 
 If it is not, or only partially because potential problems have been detected, an information message is displayed telling that their file isn't accessible or which problems there might be, and what they should do to improve it.
@@ -9,26 +10,31 @@ Rather than being generic and technical, as most other accessibility checkers to
 so that professors that aren't used to computers and especially not with accessibiliy-related issues can understand easily what issues are about and how they are supposed to fix them in their favorite programs.
 
 It is no doubt that, if problems and the way to solve them are explained simply, professors are likely to effectively fix them if it takes them only reasonnable time. People are often ready to help in accessibility, if they are shown what to do.
+
 Deeply technical-oriented checkers are unfortunately of no help with people that may not be familiar with accessibility, word processing advanced concepts, or computers in general. It has been observed that, most often, documents on the web aren't accessible because of ignorance, not because of unwillingness or lake of time.
+
+For advanced users, detailled error messages are still present in the analysis report, but only briefly at the end. Internally, the checker use a subset of the [Matterhorn protocol](http://www.pdfa.org/2013/08/the-matterhorn-protocol-1-0/).
+Priority has been put on points in the protocol that have the most impact on general accessibility, and that weren't too ahrd to check. The goal is at first to let professors to achieve resonnably correct accessibility, not absolute perfection. Anyway, in term of accessibility, perfection is extremely hard and time consuming to reach.
 
 ## Installing the plugin
 
 This accessibility checker plugin is composed of multiple parts, so its installation is unfortunately not as easy as one would like.
 
 ### Patching moodle
+
 First step is installing moodle, or patch it if it is already done.
 Patching is required because some internal features don't exist in the base version. 
 More specifically, the patch adds the possibility for a plugin to be notified when a teacher uploads a file. Being notified when a file is uploaded exists since a long time for students, to allow auto-grading, anti-cheat checking and such likes, but what instructors upload at all has never been verified in any way before, so this function needs to be added.
 
-You can download the entire moodle distribution already patched, only the patch alone, or only files that have been patched in acse automatic patching doesn't work.
+You can download the entire moodle distribution already patched, only the patch alone, or only files that have been patched in case automatic patching doesn't work.
 Version 2.6.2 of moodle has been used as a base. If you are already using a different version, you might have to apply the patch mor or less manually.
 
 The patch has been created with `git diff`. In the best case, it means that it should be patched with `git apply`.
 If you left the file name of your download unchanged, the exact command would be `git apply moodle.patch`.
 
-- [Entire moodle distribution including patch and plugin](http://vrac.quentinc.net/epfl/sp2014/moodle-full.zip)
+- [Entire moodle distribution including patch and plugin](http://vrac.quentinc.net/epfl/sp2014/moodle-full+patch.zip)
 - [Moodle patch file](http://vrac.quentinc.net/epfl/sp2014/moodle.patch)
-- [Archive containing only files that have been modified](http://vrac.quentinc.net/epfl/sp2014/moodle-partial.zip)
+- [Archive containing only files that have been added/modified](http://vrac.quentinc.net/epfl/sp2014/moodle-partial.zip)
 
 ### Installing the plugin
 
@@ -68,7 +74,7 @@ To simplify your life, all needed jar files mentionned above can be downloaded i
 - [Zip archive of all needed jar files](http://vrac.quentinc.net/epfl/sp2014/jars.zip)
 
 Put all downloaded jar files from iText and bouncycastle in `lib/ext/` or `jre/lib/ext` directory of your Java installation. This directory is sometimes called extensions directory, or automagic directory.
-Alternatively, you can add them to your classpath or specify them explicitely on program's command line (see below).
+Alternatively, you can add them to your system classpath or specify them explicitely on program's command line (see below).
 
 ## Configure the plugin
 
@@ -130,10 +136,10 @@ If you get a message telling exception, then something went wrong. If you are re
 
 It's now time to test the plugin in action inside moodle !
 
-When a perfect PDF is uploaded, that is technically accessible and without errors, no message is displayed at all. Therefore, you should try the plugin with a volontarily invalid file to see something.
+When a perfect PDF is uploaded, that is technically accessible and without errors, the message displayed just congratulates you for having uploaded a good file. Therefore, to see more interesting messages, you should try the plugin with a volontarily invalid file.
 Don't retry the same file as above (`test-commandline.pdf`), it doesn't have any error. Try with another PDF file, for example the `test-invalid.pdf` given below.
 
-- [Download example PDF file: test-invalid.pdf](http://vrac.quentinc.net/epfl/sp2014/test-invalid.pdf)
+- [Download example invalid PDF file: test-invalid.pdf](http://vrac.quentinc.net/epfl/sp2014/test-invalid.pdf)
 
 Open moodle in your browser and login with an account that has the right to upload files inside courses: an admin account, or a teacher account. You might create a dummy course for your tests.
 
@@ -143,3 +149,26 @@ Open moodle in your browser and login with an account that has the right to uplo
 4. When it's time to effectively upload files, send `test-invalid.pdf`or another PDF file that isn't accessible (it has 99% chances to not be accessible)
 5. After the file is uploaded, you should see a big dialog box telling that your PDF isn't accessible, what were problems found, and hints on how to solve them.
 6. You juste have to click OK to close the dialog box and continue working normally
+
+
+## Possible improvements
+
+This plugin is still quite in a early stage and there are many possibilities for improvements. Ammong those are :
+
+* Error messages are often too long to fit in dialog boxes. It would be nice to open a new page specifically to display accessibility checking reports
+* There are a lot of programs able to produce PDF files, and only explanations on how to handle accessibility in a few of them: word, power point, open office; it would be nice to have explanations for other less popular programs as well. Unfortunately this would have mean trying and mastering them for quite a long time.
+
+## Conclusion
+
+Before developping the plugin, we observed in a sample of 200 PDF files that only about 15 of them were tagged. 
+Ammong these 15, only about 8 to 10 had tagging that made reasonnable sens for assistive tools, and only 2 or 3 hadn't any error. 
+This is of course deceptevely low, and was a part of the motivation to write this plugin.
+
+It would be interesting to really deploy the plugin somewhere, and conduct a study to see the impact it will have had in the general level of accessibility, some time after its introduction.
+Unfortunately, people change slowly, and at least 2 or 3 years would probably be needed to conclude something useful out of this experience.
+
+In the meantime, I hope that it will encourage people to make more accessible PDF files.
+
+
+
+
