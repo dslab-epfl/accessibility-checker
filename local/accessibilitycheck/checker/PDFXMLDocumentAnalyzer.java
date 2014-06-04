@@ -19,7 +19,7 @@ public Rule (boolean t) { this(null,t); }
 }
 private static Map<String,Rule> rules = new HashMap<String,Rule>();
 
-private Document doc;
+private Document doc, metadata;
 private PdfDictionary catalog;
 private List<PdfName> markedContentElements = new ArrayList<PdfName>();
 private Map<PdfName,PdfName> roleMap;
@@ -73,6 +73,7 @@ cvt.readPDF(filename);
 doc = cvt.getDocument();
 roleMap = cvt.getRoleMap();
 catalog = cvt.getCatalog();
+metadata = cvt.getMetaData();
 nPages = cvt.getPageCount();
 analyzeDocument();
 analyzeRoleMap();
@@ -193,7 +194,14 @@ else markedContentElements.remove(markedContentElements.size() -1);
 
 /** Validate some other PDF aspects, outside of the XML document part */
 private void analyzeMisc () {
-// Nothing else for the moment
+// Chek document metadata (MH06-XXX)
+boolean hasTitle = false;
+if (metadata!=null) {
+NodeList nlTitle = metadata.getElementsByTagName("dc:title");
+hasTitle = nlTitle!=null && nlTitle.getLength()>0;
+}
+else message("MissingMetadata", "MH06-001: the document doesn't contain metadata (XMP metadata stream)");
+if (!hasTitle) message("NoTitle", "MH06-003: the document doesn't have a title (dc:title metadata)");
 }
 
 /** Check the validity of the role map */

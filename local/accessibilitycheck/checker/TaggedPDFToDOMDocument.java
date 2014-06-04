@@ -204,6 +204,23 @@ public PdfDictionary getCatalog () { return pdf.getCatalog(); }
 public int getPageCount () { return pdf.getNumberOfPages(); }
 public PDFTextExtractor getTextExtractor () { return textExtractor; }
 
+/** Return the XMP XML metadata of the document if present */
+public Document getMetaData () {
+try {
+PdfStream mdStream = getCatalog().getAsStream(PdfName.METADATA);
+if (mdStream==null) return null;
+byte[] data = PdfReader.getStreamBytes((PRStream)mdStream);
+if (data==null) return null;
+String mdStr = new String(data, 0, data.length, "ISO-8859-1");
+int begin = mdStr.indexOf("<x:xmpmeta");
+int end = mdStr.indexOf("</x:xmpmeta");
+if (begin<0 || end<0) return null;
+mdStr = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n" + mdStr.substring(begin, end+("</x:xmpmeta>".length()));
+return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ByteArrayInputStream(mdStr.getBytes("ISO-8859-1")));
+} catch (Exception e) { /* e.printStackTrace(); */ }
+return null;
+}
+
 /** Read a PDF file and initialize the DOM document */
 public void readPDF (String filename) throws IOException {
 try {
