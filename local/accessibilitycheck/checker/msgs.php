@@ -193,5 +193,17 @@ $n problems of that kind have been encountered.
 
 Unfortunately, fixing this kind of error often require very advanced tools like Acrobat Pro.
 END
+,'tNoTitle' => <<<'END'
+Level 1: your document has no title
+It's very important for a document to have a title, so that its topic and purpose can be identified quickly. The title is important for everyone, not only visually impaired people. 
+Some PDF readers show it on top of the window or at another strategic place, that's why it's very important.
+Your document doesn't appear to ahve a title or it is empty. You can usually define it as well as other meta-data such as author, date, etc. in document properties.
+END
+,'tNoTitle_word' => <<<'END'
+IN Office 2007 and above, you will find document properties under office ribbon menu, prepare submenu, properties item.
+END
+,'tNoTitle_powerpoint' => <<<'END'
+IN Office 2007 and above, you will find document properties under office ribbon menu, prepare submenu, properties item.
+END
 );//
 ?>
