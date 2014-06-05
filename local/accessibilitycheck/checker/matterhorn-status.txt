@@ -12,9 +12,9 @@ Checkpoint 2: role mapping
 02-003: done
 02-004: done
 Checkpoint 6: metadata
-06-001: doable
+06-001: done
 06-002: doable
-06-003: doable
+06-003: done
 Checkpoint 7: dictionaries
 07-001: unknown
 07-002: unknown
