@@ -122,6 +122,5 @@ $msg.="\r\n".$AXMSGS['gAxTipps']."\r\n";
 if (isset($AXMSGS["axGnr_$gen"])) $msg.="\r\n".$AXMSGS["axGnr_$gen"];
 }
 if (isset($msg) && $msg) $o->msg = utf8_encode(nl2br(htmlspecialchars($msg, ENT_IGNORE, 'ISO-8859-1')));
-file_put_contents("C:\\wamp\\www\\moodle\\local\\accessibilitycheck\\checker\\msg.log", print_r($o,true));
 }
 ?>
