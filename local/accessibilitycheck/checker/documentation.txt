@@ -157,6 +157,7 @@ This plugin is still quite in a early stage and there are many possibilities for
 
 * Error messages are often too long to fit in dialog boxes. It would be nice to open a new page specifically to display accessibility checking reports
 * There are a lot of programs able to produce PDF files, and only explanations on how to handle accessibility in a few of them: word, power point, open office; it would be nice to have explanations for other less popular programs as well. Unfortunately this would have mean trying and mastering them for quite a long time.
+* Currently, the matterhorn protocol isn't complete, only relatively few of the whole set of criterias are indeed checked. It would be nice to check more, if possible.
 
 ## Conclusion
 

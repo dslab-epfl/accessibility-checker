@@ -1946,4 +1946,3 @@ return this.msg_dlg;
     M.core_filepicker.instances[options.client_id] = new FilePickerHelper(options);
 };
 
-//alert('Ready12'); //quick syntax check / wway to know if the script is effectively reloaded
